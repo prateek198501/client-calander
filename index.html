@@ -573,9 +573,9 @@
     /* View toggle + priority filter */
     .view-toggle{flex-wrap:wrap;gap:8px;}
     .toggle-btn{font-size:15px;padding:12px 20px;flex:1;min-width:120px;}
-    .priority-filter-bar{gap:10px;}
-    .pf-label{font-size:13px;}
-    .pf-btn{font-size:14.5px;padding:11px 18px;}
+    .priority-filter-bar{gap:8px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;}
+    .pf-label{font-size:12.5px;flex:none;}
+    .pf-btn{font-size:13px;padding:9px 14px;flex:none;white-space:nowrap;}
 
     /* Calendar header */
     .cal-header{flex-wrap:wrap;gap:10px;}
@@ -698,14 +698,6 @@
         <select id="repFilter"></select>
       </div>
 
-      <div class="panel">
-        <h3>Importance &amp; visit cadence</h3>
-        <div class="legend-row"><span class="legend-swatch" style="background:var(--high-bg);border:1px solid var(--high-line);"></span> <b>High</b> &gt; ₹15L/yr <span class="cadence">every 15 days</span></div>
-        <div class="legend-row"><span class="legend-swatch" style="background:var(--med-bg);border:1px solid var(--med-line);"></span> <b>Medium</b> ₹4-15L/yr <span class="cadence">every 30 days</span></div>
-        <div class="legend-row"><span class="legend-swatch" style="background:var(--low-bg);border:1px solid var(--low-line);"></span> <b>Low</b> &lt; ₹4L/yr <span class="cadence">every 60 days</span></div>
-        <div style="font-size:11px;color:var(--ink-soft);margin-top:8px;line-height:1.5;">Priority = average annual earning (total earning ÷ years since first purchase).</div>
-      </div>
-
       <div class="panel" style="flex:1;display:flex;flex-direction:column;min-height:0;">
         <h3>Clients</h3>
         <input type="text" class="search-input" id="clientSearch" placeholder="Search client...">
@@ -719,18 +711,6 @@
         <div class="stat-row"><span>Medium priority</span><b id="statMed">-</b></div>
         <div class="stat-row"><span>Low priority</span><b id="statLow">-</b></div>
         <div class="stat-row"><span>Visits due this month</span><b id="statDue">-</b></div>
-      </div>
-
-      <div class="panel">
-        <h3>Data</h3>
-        <div style="font-size:12px;color:var(--ink-soft);margin-bottom:10px;line-height:1.5;">Reschedules and notes are kept in this browser tab. Export before closing to keep them.</div>
-        <div class="footer-actions">
-          <button class="btn-sm" id="exportBtn">Export edits</button>
-          <label class="btn-sm" style="text-align:center;cursor:pointer;">
-            Import
-            <input type="file" id="importFile" accept="application/json" class="hidden">
-          </label>
-        </div>
       </div>
     </aside>
 
@@ -898,6 +878,31 @@
     var key = noteKey(client, idx);
     state.visitLog[key] = Object.assign({visited:false, called:false}, state.visitLog[key], patch);
   }
+
+  // Reminders reuse the same notes/visitLog storage as clients, keyed under a
+  // synthetic "client" id per reminder so each occurrence gets its own slot.
+  function reminderKey(rid){ return 'reminder::' + rid; }
+
+  // Walk backwards from the occurrence before `idx` to find the most recent
+  // non-empty note, so a fresh recurring reminder occurrence starts pre-filled
+  // with whatever was last written, instead of blank every cycle.
+  function carryForwardNote(client, idx){
+    for(var i = idx - 1; i >= 0; i--){
+      var note = state.notes[noteKey(client, i)];
+      if(note) return note;
+    }
+    return '';
+  }
+
+  // Same idea for Visited/Called: carry the last explicitly-set status forward
+  // until this occurrence gets its own explicit check.
+  function carryForwardVisitLog(client, idx){
+    for(var i = idx - 1; i >= 0; i--){
+      var key = noteKey(client, i);
+      if(Object.prototype.hasOwnProperty.call(state.visitLog, key)) return state.visitLog[key];
+    }
+    return {visited: false, called: false};
+  }
   // Most recent date (across a client's tracked occurrences) marked visited/called.
   function lastActionDate(client, field){
     var occs = occurrencesFor(client);
@@ -1034,6 +1039,7 @@
       out.push({
         isReminder: true,
         id: r.id,
+        idx: i,
         client: r.title,
         rep: r.rep,
         tier: r.priority,
@@ -1492,6 +1498,14 @@
   function renderReminderCard(o){
     var tierClass = o.tier.toLowerCase();
     var freqLabel = o.frequencyDays ? ('every ' + o.frequencyDays + ' days') : 'one-time';
+    var rKey = reminderKey(o.id);
+    var ownKey = noteKey(rKey, o.idx);
+    var ownNote = state.notes[ownKey];
+    var noteVal = (ownNote !== undefined && ownNote !== '') ? ownNote : carryForwardNote(rKey, o.idx);
+    var noteCarried = (ownNote === undefined || ownNote === '') && !!noteVal;
+    var hasOwnVL = Object.prototype.hasOwnProperty.call(state.visitLog, ownKey);
+    var vl = hasOwnVL ? state.visitLog[ownKey] : carryForwardVisitLog(rKey, o.idx);
+    var vlCarried = !hasOwnVL && (vl.visited || vl.called);
     return '' +
     '<div class="appt-card reminder-card">' +
       '<div class="appt-top">' +
@@ -1505,6 +1519,12 @@
       '<div class="appt-actions">' +
         '<button class="btn-sm" data-action="delete-reminder" data-id="'+o.id+'">Delete reminder</button>' +
       '</div>' +
+      (vlCarried || noteCarried ? '<div style="font-size:11px;color:var(--ink-soft);margin-top:2px;">Carried over from the previous reminder</div>' : '') +
+      '<div class="visit-call-check">' +
+        '<label class="check-pill'+(vl.visited?' checked':'')+'"><input type="checkbox" class="visit-check" data-field="visited" data-client="'+encodeURIComponent(rKey)+'" data-idx="'+o.idx+'"'+(vl.visited?' checked':'')+'> Visited</label>' +
+        '<label class="check-pill'+(vl.called?' checked':'')+'"><input type="checkbox" class="visit-check" data-field="called" data-client="'+encodeURIComponent(rKey)+'" data-idx="'+o.idx+'"'+(vl.called?' checked':'')+'> Called</label>' +
+      '</div>' +
+      '<textarea class="note-input" placeholder="Add a note for this reminder..." data-client="'+encodeURIComponent(rKey)+'" data-idx="'+o.idx+'">'+escapeHtml(noteVal)+'</textarea>' +
     '</div>';
   }
 
@@ -1825,50 +1845,6 @@
       if(listSort.key === key) listSort.dir *= -1; else { listSort.key = key; listSort.dir = 1; }
       renderListView();
     });
-  });
-
-  // ---------------- EXPORT / IMPORT ----------------
-  document.getElementById('exportBtn').addEventListener('click', function(){
-    var blob = new Blob([JSON.stringify({overrides: state.overrides, notes: state.notes, priorityOverrides: state.priorityOverrides, closedDays: state.closedDays, visitLog: state.visitLog, manualReminders: state.manualReminders}, null, 2)], {type:'application/json'});
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'visit-calendar-edits.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  });
-  document.getElementById('importFile').addEventListener('change', function(e){
-    var file = e.target.files[0];
-    if(!file) return;
-    var reader = new FileReader();
-    reader.onload = function(evt){
-      try{
-        var parsed = JSON.parse(evt.target.result);
-        if(parsed && parsed.overrides){
-          state.overrides = Object.assign({}, state.overrides, parsed.overrides);
-        }
-        if(parsed && parsed.notes){
-          state.notes = Object.assign({}, state.notes, parsed.notes);
-        }
-        if(parsed && parsed.priorityOverrides){
-          state.priorityOverrides = Object.assign({}, state.priorityOverrides, parsed.priorityOverrides);
-        }
-        if(parsed && parsed.closedDays){
-          state.closedDays = Object.assign({}, state.closedDays, parsed.closedDays);
-        }
-        if(parsed && parsed.visitLog){
-          state.visitLog = Object.assign({}, state.visitLog, parsed.visitLog);
-        }
-        if(parsed && parsed.manualReminders){
-          state.manualReminders = Object.assign({}, state.manualReminders, parsed.manualReminders);
-        }
-        renderAll();
-      }catch(err){
-        alert('Could not read that file. Please choose a valid exported JSON file.');
-      }
-    };
-    reader.readAsText(file);
-    e.target.value = '';
   });
 
   var resizeTimer = null;
