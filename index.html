@@ -981,6 +981,14 @@
         date = runningDate.toISOString().slice(0,10);
         rescheduled = true;
       }
+      var ownNoteKey = noteKey(client.name, idx);
+      var ownNote = state.notes[ownNoteKey];
+      var displayNote = (ownNote !== undefined && ownNote !== '') ? ownNote : carryForwardNote(client.name, idx);
+      var noteCarried = (ownNote === undefined || ownNote === '') && !!displayNote;
+      var explicitVL = getVisitLog(client.name, idx);
+      var hasOwnVL = Object.prototype.hasOwnProperty.call(state.visitLog, ownNoteKey);
+      var displayVL = hasOwnVL ? explicitVL : carryForwardVisitLog(client.name, idx);
+      var vlCarried = !hasOwnVL && (displayVL.visited || displayVL.called);
       out.push({
         client: client.name,
         rep: client.rep,
@@ -994,9 +1002,14 @@
         idx: idx,
         origDate: origDate,
         date: date,
-        note: state.notes[noteKey(client.name, idx)] || '',
-        visited: getVisitLog(client.name, idx).visited,
-        called: getVisitLog(client.name, idx).called,
+        note: ownNote || '',
+        visited: explicitVL.visited,
+        called: explicitVL.called,
+        displayNote: displayNote,
+        noteCarried: noteCarried,
+        displayVisited: displayVL.visited,
+        displayCalled: displayVL.called,
+        vlCarried: vlCarried,
         rescheduled: rescheduled
       });
     });
@@ -1269,7 +1282,8 @@
           occs.slice(0,3).forEach(function(o){
             var extraClass = o.isReminder ? ' reminder' : '';
             var label = (o.isReminder ? '🔔 ' : '') + o.client;
-            html += '<div class="chip '+o.tier.toLowerCase()+extraClass+'" title="'+escapeHtml(o.client)+(o.rescheduled?' (rescheduled)':'')+'">'+escapeHtml(truncate(label,20))+'</div>';
+            var clientAttr = o.isReminder ? '' : ' data-open-client="'+encodeURIComponent(o.client)+'"';
+            html += '<div class="chip '+o.tier.toLowerCase()+extraClass+'"'+clientAttr+' title="'+escapeHtml(o.client)+(o.rescheduled?' (rescheduled)':'')+'">'+escapeHtml(truncate(label,20))+'</div>';
           });
           if(occs.length>3){
             html += '<div class="chip-more">+'+(occs.length-3)+' more</div>';
@@ -1283,9 +1297,14 @@
     document.getElementById('weeksContainer').innerHTML = html;
 
     Array.prototype.forEach.call(document.querySelectorAll('.day-cell[data-date]'), function(el){
-      el.addEventListener('click', function(){
+      el.addEventListener('click', function(e){
+        var chip = e.target.closest ? e.target.closest('[data-open-client]') : null;
         reminderFormOpen = false;
-        openDayModal(el.getAttribute('data-date'));
+        if(chip){
+          openClientModal(decodeURIComponent(chip.getAttribute('data-open-client')));
+        } else {
+          openDayModal(el.getAttribute('data-date'));
+        }
       });
     });
 
@@ -1308,7 +1327,8 @@
           dOccs.map(function(o){
             var extraClass = o.isReminder ? ' reminder' : '';
             var label = (o.isReminder ? '🔔 ' : '') + o.client;
-            return '<div class="agenda-item '+o.tier.toLowerCase()+extraClass+'">' +
+            var clientAttr = o.isReminder ? '' : ' data-open-client="'+encodeURIComponent(o.client)+'"';
+            return '<div class="agenda-item '+o.tier.toLowerCase()+extraClass+'"'+clientAttr+'>' +
               '<span class="agenda-item-name">'+escapeHtml(label)+'</span>' +
               '<span class="agenda-item-tag">'+o.tier+'</span>' +
             '</div>';
@@ -1321,9 +1341,14 @@
     }
     document.getElementById('agendaContainer').innerHTML = agendaHtml;
     Array.prototype.forEach.call(document.querySelectorAll('.agenda-day[data-date]'), function(el){
-      el.addEventListener('click', function(){
+      el.addEventListener('click', function(e){
+        var item = e.target.closest ? e.target.closest('[data-open-client]') : null;
         reminderFormOpen = false;
-        openDayModal(el.getAttribute('data-date'));
+        if(item){
+          openClientModal(decodeURIComponent(item.getAttribute('data-open-client')));
+        } else {
+          openDayModal(el.getAttribute('data-date'));
+        }
       });
     });
 
@@ -1487,11 +1512,12 @@
         '<button class="btn-sm primary" data-action="reschedule" data-client="'+encodeURIComponent(o.client)+'" data-idx="'+o.idx+'">Save new date</button>' +
         (o.rescheduled ? '<button class="btn-sm" data-action="reset" data-client="'+encodeURIComponent(o.client)+'" data-idx="'+o.idx+'">Reset to original schedule</button>' : '') +
       '</div>' +
+      (o.vlCarried || o.noteCarried ? '<div style="font-size:11px;color:var(--ink-soft);margin-top:2px;">Carried over from the previous visit</div>' : '') +
       '<div class="visit-call-check">' +
-        '<label class="check-pill'+(o.visited?' checked':'')+'"><input type="checkbox" class="visit-check" data-field="visited" data-client="'+encodeURIComponent(o.client)+'" data-idx="'+o.idx+'"'+(o.visited?' checked':'')+'> Visited</label>' +
-        '<label class="check-pill'+(o.called?' checked':'')+'"><input type="checkbox" class="visit-check" data-field="called" data-client="'+encodeURIComponent(o.client)+'" data-idx="'+o.idx+'"'+(o.called?' checked':'')+'> Called</label>' +
+        '<label class="check-pill'+(o.displayVisited?' checked':'')+'"><input type="checkbox" class="visit-check" data-field="visited" data-client="'+encodeURIComponent(o.client)+'" data-idx="'+o.idx+'"'+(o.displayVisited?' checked':'')+'> Visited</label>' +
+        '<label class="check-pill'+(o.displayCalled?' checked':'')+'"><input type="checkbox" class="visit-check" data-field="called" data-client="'+encodeURIComponent(o.client)+'" data-idx="'+o.idx+'"'+(o.displayCalled?' checked':'')+'> Called</label>' +
       '</div>' +
-      '<textarea class="note-input" placeholder="Add a visit note..." data-client="'+encodeURIComponent(o.client)+'" data-idx="'+o.idx+'">'+escapeHtml(o.note)+'</textarea>' +
+      '<textarea class="note-input" placeholder="Add a visit note..." data-client="'+encodeURIComponent(o.client)+'" data-idx="'+o.idx+'">'+escapeHtml(o.displayNote)+'</textarea>' +
     '</div>';
   }
 
@@ -1650,11 +1676,12 @@
     html += '<div class="notes-table">' + occs.map(function(o){
       return '<div class="notes-row">' +
         '<div class="notes-date">'+fmtDateLong(o.date)+(o.rescheduled ? '<span class="resched-tag">rescheduled</span>' : '')+'</div>' +
+        (o.vlCarried || o.noteCarried ? '<div style="font-size:11px;color:var(--ink-soft);margin:2px 0 6px;">Carried over from the previous visit</div>' : '') +
         '<div class="visit-call-check">' +
-          '<label class="check-pill'+(o.visited?' checked':'')+'"><input type="checkbox" class="visit-check" data-field="visited" data-client="'+encodeURIComponent(client.name)+'" data-idx="'+o.idx+'"'+(o.visited?' checked':'')+'> Visited</label>' +
-          '<label class="check-pill'+(o.called?' checked':'')+'"><input type="checkbox" class="visit-check" data-field="called" data-client="'+encodeURIComponent(client.name)+'" data-idx="'+o.idx+'"'+(o.called?' checked':'')+'> Called</label>' +
+          '<label class="check-pill'+(o.displayVisited?' checked':'')+'"><input type="checkbox" class="visit-check" data-field="visited" data-client="'+encodeURIComponent(client.name)+'" data-idx="'+o.idx+'"'+(o.displayVisited?' checked':'')+'> Visited</label>' +
+          '<label class="check-pill'+(o.displayCalled?' checked':'')+'"><input type="checkbox" class="visit-check" data-field="called" data-client="'+encodeURIComponent(client.name)+'" data-idx="'+o.idx+'"'+(o.displayCalled?' checked':'')+'> Called</label>' +
         '</div>' +
-        '<textarea class="note-input" placeholder="Add a note for this visit..." data-client="'+encodeURIComponent(client.name)+'" data-idx="'+o.idx+'">'+escapeHtml(o.note)+'</textarea>' +
+        '<textarea class="note-input" placeholder="Add a note for this visit..." data-client="'+encodeURIComponent(client.name)+'" data-idx="'+o.idx+'">'+escapeHtml(o.displayNote)+'</textarea>' +
       '</div>';
     }).join('') + '</div>';
 
