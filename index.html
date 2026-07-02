@@ -883,26 +883,6 @@
   // synthetic "client" id per reminder so each occurrence gets its own slot.
   function reminderKey(rid){ return 'reminder::' + rid; }
 
-  // Walk backwards from the occurrence before `idx` to find the most recent
-  // non-empty note, so a fresh recurring reminder occurrence starts pre-filled
-  // with whatever was last written, instead of blank every cycle.
-  function carryForwardNote(client, idx){
-    for(var i = idx - 1; i >= 0; i--){
-      var note = state.notes[noteKey(client, i)];
-      if(note) return note;
-    }
-    return '';
-  }
-
-  // Same idea for Visited/Called: carry the last explicitly-set status forward
-  // until this occurrence gets its own explicit check.
-  function carryForwardVisitLog(client, idx){
-    for(var i = idx - 1; i >= 0; i--){
-      var key = noteKey(client, i);
-      if(Object.prototype.hasOwnProperty.call(state.visitLog, key)) return state.visitLog[key];
-    }
-    return {visited: false, called: false};
-  }
   // Most recent date (across a client's tracked occurrences) marked visited/called.
   function lastActionDate(client, field){
     var occs = occurrencesFor(client);
@@ -981,14 +961,6 @@
         date = runningDate.toISOString().slice(0,10);
         rescheduled = true;
       }
-      var ownNoteKey = noteKey(client.name, idx);
-      var ownNote = state.notes[ownNoteKey];
-      var displayNote = (ownNote !== undefined && ownNote !== '') ? ownNote : carryForwardNote(client.name, idx);
-      var noteCarried = (ownNote === undefined || ownNote === '') && !!displayNote;
-      var explicitVL = getVisitLog(client.name, idx);
-      var hasOwnVL = Object.prototype.hasOwnProperty.call(state.visitLog, ownNoteKey);
-      var displayVL = hasOwnVL ? explicitVL : carryForwardVisitLog(client.name, idx);
-      var vlCarried = !hasOwnVL && (displayVL.visited || displayVL.called);
       out.push({
         client: client.name,
         rep: client.rep,
@@ -1002,14 +974,9 @@
         idx: idx,
         origDate: origDate,
         date: date,
-        note: ownNote || '',
-        visited: explicitVL.visited,
-        called: explicitVL.called,
-        displayNote: displayNote,
-        noteCarried: noteCarried,
-        displayVisited: displayVL.visited,
-        displayCalled: displayVL.called,
-        vlCarried: vlCarried,
+        note: state.notes[noteKey(client.name, idx)] || '',
+        visited: getVisitLog(client.name, idx).visited,
+        called: getVisitLog(client.name, idx).called,
         rescheduled: rescheduled
       });
     });
@@ -1512,12 +1479,11 @@
         '<button class="btn-sm primary" data-action="reschedule" data-client="'+encodeURIComponent(o.client)+'" data-idx="'+o.idx+'">Save new date</button>' +
         (o.rescheduled ? '<button class="btn-sm" data-action="reset" data-client="'+encodeURIComponent(o.client)+'" data-idx="'+o.idx+'">Reset to original schedule</button>' : '') +
       '</div>' +
-      (o.vlCarried || o.noteCarried ? '<div style="font-size:11px;color:var(--ink-soft);margin-top:2px;">Carried over from the previous visit</div>' : '') +
       '<div class="visit-call-check">' +
-        '<label class="check-pill'+(o.displayVisited?' checked':'')+'"><input type="checkbox" class="visit-check" data-field="visited" data-client="'+encodeURIComponent(o.client)+'" data-idx="'+o.idx+'"'+(o.displayVisited?' checked':'')+'> Visited</label>' +
-        '<label class="check-pill'+(o.displayCalled?' checked':'')+'"><input type="checkbox" class="visit-check" data-field="called" data-client="'+encodeURIComponent(o.client)+'" data-idx="'+o.idx+'"'+(o.displayCalled?' checked':'')+'> Called</label>' +
+        '<label class="check-pill'+(o.visited?' checked':'')+'"><input type="checkbox" class="visit-check" data-field="visited" data-client="'+encodeURIComponent(o.client)+'" data-idx="'+o.idx+'"'+(o.visited?' checked':'')+'> Visited</label>' +
+        '<label class="check-pill'+(o.called?' checked':'')+'"><input type="checkbox" class="visit-check" data-field="called" data-client="'+encodeURIComponent(o.client)+'" data-idx="'+o.idx+'"'+(o.called?' checked':'')+'> Called</label>' +
       '</div>' +
-      '<textarea class="note-input" placeholder="Add a visit note..." data-client="'+encodeURIComponent(o.client)+'" data-idx="'+o.idx+'">'+escapeHtml(o.displayNote)+'</textarea>' +
+      '<textarea class="note-input" placeholder="Add a visit note..." data-client="'+encodeURIComponent(o.client)+'" data-idx="'+o.idx+'">'+escapeHtml(o.note)+'</textarea>' +
     '</div>';
   }
 
@@ -1526,12 +1492,8 @@
     var freqLabel = o.frequencyDays ? ('every ' + o.frequencyDays + ' days') : 'one-time';
     var rKey = reminderKey(o.id);
     var ownKey = noteKey(rKey, o.idx);
-    var ownNote = state.notes[ownKey];
-    var noteVal = (ownNote !== undefined && ownNote !== '') ? ownNote : carryForwardNote(rKey, o.idx);
-    var noteCarried = (ownNote === undefined || ownNote === '') && !!noteVal;
-    var hasOwnVL = Object.prototype.hasOwnProperty.call(state.visitLog, ownKey);
-    var vl = hasOwnVL ? state.visitLog[ownKey] : carryForwardVisitLog(rKey, o.idx);
-    var vlCarried = !hasOwnVL && (vl.visited || vl.called);
+    var noteVal = state.notes[ownKey] || '';
+    var vl = getVisitLog(rKey, o.idx);
     return '' +
     '<div class="appt-card reminder-card">' +
       '<div class="appt-top">' +
@@ -1545,7 +1507,6 @@
       '<div class="appt-actions">' +
         '<button class="btn-sm" data-action="delete-reminder" data-id="'+o.id+'">Delete reminder</button>' +
       '</div>' +
-      (vlCarried || noteCarried ? '<div style="font-size:11px;color:var(--ink-soft);margin-top:2px;">Carried over from the previous reminder</div>' : '') +
       '<div class="visit-call-check">' +
         '<label class="check-pill'+(vl.visited?' checked':'')+'"><input type="checkbox" class="visit-check" data-field="visited" data-client="'+encodeURIComponent(rKey)+'" data-idx="'+o.idx+'"'+(vl.visited?' checked':'')+'> Visited</label>' +
         '<label class="check-pill'+(vl.called?' checked':'')+'"><input type="checkbox" class="visit-check" data-field="called" data-client="'+encodeURIComponent(rKey)+'" data-idx="'+o.idx+'"'+(vl.called?' checked':'')+'> Called</label>' +
@@ -1676,12 +1637,11 @@
     html += '<div class="notes-table">' + occs.map(function(o){
       return '<div class="notes-row">' +
         '<div class="notes-date">'+fmtDateLong(o.date)+(o.rescheduled ? '<span class="resched-tag">rescheduled</span>' : '')+'</div>' +
-        (o.vlCarried || o.noteCarried ? '<div style="font-size:11px;color:var(--ink-soft);margin:2px 0 6px;">Carried over from the previous visit</div>' : '') +
         '<div class="visit-call-check">' +
-          '<label class="check-pill'+(o.displayVisited?' checked':'')+'"><input type="checkbox" class="visit-check" data-field="visited" data-client="'+encodeURIComponent(client.name)+'" data-idx="'+o.idx+'"'+(o.displayVisited?' checked':'')+'> Visited</label>' +
-          '<label class="check-pill'+(o.displayCalled?' checked':'')+'"><input type="checkbox" class="visit-check" data-field="called" data-client="'+encodeURIComponent(client.name)+'" data-idx="'+o.idx+'"'+(o.displayCalled?' checked':'')+'> Called</label>' +
+          '<label class="check-pill'+(o.visited?' checked':'')+'"><input type="checkbox" class="visit-check" data-field="visited" data-client="'+encodeURIComponent(client.name)+'" data-idx="'+o.idx+'"'+(o.visited?' checked':'')+'> Visited</label>' +
+          '<label class="check-pill'+(o.called?' checked':'')+'"><input type="checkbox" class="visit-check" data-field="called" data-client="'+encodeURIComponent(client.name)+'" data-idx="'+o.idx+'"'+(o.called?' checked':'')+'> Called</label>' +
         '</div>' +
-        '<textarea class="note-input" placeholder="Add a note for this visit..." data-client="'+encodeURIComponent(client.name)+'" data-idx="'+o.idx+'">'+escapeHtml(o.displayNote)+'</textarea>' +
+        '<textarea class="note-input" placeholder="Add a note for this visit..." data-client="'+encodeURIComponent(client.name)+'" data-idx="'+o.idx+'">'+escapeHtml(o.note)+'</textarea>' +
       '</div>';
     }).join('') + '</div>';
 
