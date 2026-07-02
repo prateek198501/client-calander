@@ -1,0 +1,1632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Client Calendar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ivory:#FBF7F1;
+    --ivory-deep:#F3ECE1;
+    --card:#FFFFFF;
+    --ink:#3B332C;
+    --ink-soft:#7A7168;
+    --line:#E9E1D4;
+    --gold:#A9814F;
+    --gold-deep:#8C6A3E;
+    --gold-pale:#EFE1C6;
+
+    --high-bg:#F7DCD8;
+    --high-line:#E3A79C;
+    --high-ink:#8A3E30;
+
+    --med-bg:#F6E8C4;
+    --med-line:#D9B563;
+    --med-ink:#7A5A17;
+
+    --low-bg:#DCEAE1;
+    --low-line:#94C0A7;
+    --low-ink:#2E5F45;
+
+    --shadow: 0 10px 30px rgba(60,45,20,0.08);
+    --shadow-sm: 0 4px 12px rgba(60,45,20,0.06);
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:'Manrope',sans-serif;
+    background:
+      radial-gradient(circle at 10% 0%, #FFFDF9 0%, transparent 40%),
+      var(--ivory);
+    color:var(--ink);
+    min-height:100vh;
+  }
+  h1,h2,h3,.display{
+    font-family:'Cormorant Garamond', serif;
+    font-weight:600;
+    letter-spacing:0.01em;
+  }
+  .hidden{display:none !important;}
+
+  /* ---------- LOGIN ---------- */
+  #loginScreen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  .login-card{
+    width:100%;
+    max-width:400px;
+    background:var(--card);
+    border-radius:18px;
+    box-shadow:var(--shadow);
+    padding:40px 36px 34px;
+    border:1px solid var(--line);
+    position:relative;
+    overflow:hidden;
+    text-align:center;
+  }
+  .login-card::before{
+    content:"";
+    position:absolute;
+    top:-40px; right:-40px;
+    width:140px; height:140px;
+    background:conic-gradient(from 45deg, var(--gold-pale), transparent 60%);
+    border-radius:50%;
+    opacity:0.7;
+  }
+  .brand-mark{
+    width:44px;height:44px;
+    border-radius:50%;
+    background:linear-gradient(135deg, var(--gold), var(--gold-deep));
+    display:flex;align-items:center;justify-content:center;
+    color:#fff; font-family:'Cormorant Garamond',serif; font-weight:700; font-size:20px;
+    margin-bottom:18px;
+    box-shadow:var(--shadow-sm);
+  }
+  .login-logo{
+    display:block;
+    max-width:190px;
+    max-height:80px;
+    width:auto;height:auto;
+    margin:0 auto 20px;
+    object-fit:contain;
+  }
+  .login-card h1{font-size:28px;margin:0 0 4px;color:var(--ink);}
+  .login-card p.sub{margin:0 0 26px;color:var(--ink-soft);font-size:14px;}
+  .field{margin-bottom:16px;text-align:left;}
+  .field label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-soft);margin-bottom:6px;font-weight:600;}
+  .field input{
+    width:100%;
+    padding:12px 14px;
+    border-radius:10px;
+    border:1.5px solid var(--line);
+    background:#FDFBF7;
+    font-size:15px;
+    font-family:'Manrope',sans-serif;
+    color:var(--ink);
+    outline:none;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  .field input:focus{border-color:var(--gold); box-shadow:0 0 0 3px rgba(169,129,79,0.15);}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:12px 18px;
+    border-radius:10px;
+    border:none;
+    font-family:'Manrope',sans-serif;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+    transition:transform .12s ease, box-shadow .12s ease, background .15s ease;
+  }
+  .btn-primary{
+    width:100%;
+    background:linear-gradient(135deg, var(--gold), var(--gold-deep));
+    color:#fff;
+    margin-top:6px;
+    box-shadow:var(--shadow-sm);
+  }
+  .btn-primary:hover{transform:translateY(-1px); box-shadow:var(--shadow);}
+  .login-error{
+    background:var(--high-bg);
+    color:var(--high-ink);
+    border:1px solid var(--high-line);
+    border-radius:8px;
+    padding:9px 12px;
+    font-size:13px;
+    margin-bottom:14px;
+    font-weight:600;
+  }
+  .login-hint{margin-top:20px;font-size:12px;color:var(--ink-soft);line-height:1.6;border-top:1px dashed var(--line);padding-top:14px;text-align:left;}
+
+  /* ---------- APP SHELL ---------- */
+  #appScreen{min-height:100vh;display:flex;flex-direction:column;}
+  header.topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 28px;
+    background:var(--card);
+    border-bottom:1px solid var(--line);
+    position:sticky;top:0;z-index:20;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  .brandline{display:flex;align-items:center;gap:12px;}
+  .brandline h1{font-size:22px;margin:0;}
+  .brandline .tag{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.1em;}
+  .topbar-right{display:flex;align-items:center;gap:14px;}
+  .user-chip{
+    display:flex;align-items:center;gap:8px;
+    background:var(--ivory-deep);
+    padding:7px 14px 7px 8px;
+    border-radius:999px;
+    font-size:13px;font-weight:700;color:var(--ink);
+  }
+  .user-chip .dot{width:8px;height:8px;border-radius:50%;background:var(--gold);}
+  .btn-ghost{
+    background:transparent;
+    border:1.5px solid var(--line);
+    color:var(--ink-soft);
+    padding:8px 14px;
+  }
+  .btn-ghost:hover{border-color:var(--gold); color:var(--gold-deep);}
+
+  main.wrap{
+    flex:1;
+    display:grid;
+    grid-template-columns:280px 1fr;
+    gap:22px;
+    padding:22px 28px 40px;
+    max-width:1400px;
+    margin:0 auto;
+    width:100%;
+  }
+  @media (max-width:980px){
+    main.wrap{grid-template-columns:1fr;}
+  }
+
+  @media (max-width:600px){
+    .login-card{padding:32px 22px 26px;}
+    .login-logo{max-width:150px;max-height:64px;}
+    .login-card h1{font-size:24px;}
+
+    header.topbar{padding:12px 16px;}
+    .brandline h1{font-size:19px;}
+    main.wrap{padding:14px 14px 32px;}
+
+    .cal-header{flex-wrap:wrap;gap:10px;}
+    .cal-nav{flex:1;justify-content:center;}
+    .cal-title{min-width:0;flex:1;font-size:19px;}
+    .cal-today-btn{width:100%;order:3;text-align:center;}
+
+    .day-cell{min-height:78px;padding:5px;}
+    .day-num{font-size:11px;}
+    .chip{font-size:9.5px;padding:2px 4px;}
+    .dow-row div{font-size:9.5px;padding:7px 0;}
+
+    .earnings-pair{grid-template-columns:1fr;}
+    .reminder-form .row2{grid-template-columns:1fr;}
+    .closed-day-add{flex-direction:column;align-items:stretch;}
+
+    .modal{padding:20px 18px 18px;}
+    .appt-actions input[type=date]{width:100%;}
+
+    .view-toggle{flex-wrap:wrap;}
+    table{min-width:640px;}
+  }
+
+  /* SIDEBAR */
+  aside.sidebar{display:flex;flex-direction:column;gap:16px;}
+  .panel{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:18px;
+    box-shadow:var(--shadow-sm);
+  }
+  .panel h3{margin:0 0 12px;font-size:17px;color:var(--ink);}
+  .legend-row{display:flex;align-items:center;gap:10px;font-size:13px;padding:7px 0;color:var(--ink-soft);}
+  .legend-swatch{width:14px;height:14px;border-radius:4px;flex:none;transform:rotate(45deg);}
+  .legend-row b{color:var(--ink);font-weight:700;}
+  .legend-row .cadence{margin-left:auto;font-weight:700;color:var(--ink);}
+
+  select, .filter-select{
+    width:100%;
+    padding:10px 12px;
+    border-radius:10px;
+    border:1.5px solid var(--line);
+    background:#FDFBF7;
+    font-family:'Manrope',sans-serif;
+    font-size:14px;
+    font-weight:600;
+    color:var(--ink);
+    outline:none;
+  }
+  .search-input{
+    width:100%;
+    padding:10px 12px;
+    border-radius:10px;
+    border:1.5px solid var(--line);
+    background:#FDFBF7;
+    font-size:14px;
+    outline:none;
+    margin-bottom:10px;
+  }
+  .search-input:focus, select:focus{border-color:var(--gold);}
+
+  .client-mini-list{max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;}
+  .client-mini{
+    display:flex;align-items:center;gap:8px;
+    padding:8px 10px;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:12.5px;
+    border:1px solid transparent;
+  }
+  .client-mini:hover{background:var(--ivory-deep);}
+  .client-mini .tier-dot{width:9px;height:9px;border-radius:50%;flex:none;}
+  .client-mini .cname{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;}
+  .client-mini .cval{color:var(--ink-soft);font-size:11px;font-weight:700;}
+
+  .stat-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:var(--ink-soft);border-bottom:1px dashed var(--line);}
+  .stat-row:last-child{border-bottom:none;}
+  .stat-row b{color:var(--ink);}
+
+  /* MAIN VIEW TOGGLE */
+  .view-toggle{display:flex;gap:8px;margin-bottom:16px;}
+  .toggle-btn{
+    padding:9px 16px;border-radius:999px;border:1.5px solid var(--line);
+    background:var(--card); color:var(--ink-soft); font-weight:700; font-size:13px; cursor:pointer;
+  }
+  .toggle-btn.active{background:var(--gold); border-color:var(--gold); color:#fff;}
+
+  /* PRIORITY FILTER BAR */
+  .priority-filter-bar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+  .pf-label{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;color:var(--ink-soft);margin-right:2px;}
+  .pf-btn{
+    padding:8px 16px;border-radius:999px;border:1.5px solid var(--line);
+    background:var(--card); color:var(--ink-soft); font-weight:700; font-size:12.5px; cursor:pointer;
+  }
+  .pf-btn:hover{border-color:var(--gold);}
+  .pf-btn.active{color:#fff;border-color:transparent;}
+  .pf-btn.active[data-priority="ALL"]{background:var(--gold);}
+  .pf-btn.active.pf-high{background:var(--high-line);}
+  .pf-btn.active.pf-medium{background:var(--med-line);}
+  .pf-btn.active.pf-low{background:var(--low-line);}
+
+  /* REMINDER styling */
+  .chip.reminder{background:#EDE7F6;color:#5B3E96;border-left-color:#9B7FD4;}
+  .reminder-card{border-style:dashed;}
+  .btn-add-reminder{
+    width:100%;margin-top:4px;padding:10px 14px;border-radius:10px;
+    border:1.5px dashed var(--gold); background:var(--gold-pale); color:var(--gold-deep);
+    font-weight:800; font-size:13px; cursor:pointer;
+  }
+  .btn-add-reminder:hover{background:#EAD9B0;}
+  .reminder-form{border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:14px;background:#FCFAF5;}
+  .reminder-form .field{margin-bottom:10px;}
+  .reminder-form label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-soft);margin-bottom:5px;font-weight:700;}
+  .reminder-form input[type=text], .reminder-form select{
+    width:100%;padding:9px 11px;border-radius:8px;border:1.5px solid var(--line);font-family:'Manrope',sans-serif;font-size:13px;
+  }
+  .reminder-form .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+  /* CALENDAR */
+  .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .cal-nav{display:flex;align-items:center;gap:10px;}
+  .cal-nav button{
+    width:36px;height:36px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);
+    cursor:pointer;font-size:16px;color:var(--ink);
+  }
+  .cal-nav button:hover{border-color:var(--gold); color:var(--gold-deep);}
+  .cal-title{font-size:24px;min-width:200px;text-align:center;}
+  .cal-today-btn{padding:8px 14px;border-radius:999px;border:1.5px solid var(--gold); color:var(--gold-deep); background:#fff; font-weight:700; font-size:12px; cursor:pointer;}
+
+  .calendar-grid{
+    background:var(--card);
+    border-radius:16px;
+    border:1px solid var(--line);
+    box-shadow:var(--shadow-sm);
+    overflow:hidden;
+  }
+  .dow-row{display:grid;grid-template-columns:repeat(7,1fr);background:var(--ivory-deep);}
+  .dow-row div{padding:10px 0;text-align:center;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-soft);}
+  .weeks{display:flex;flex-direction:column;}
+  .week-row{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid var(--line);}
+  .day-cell{
+    min-height:112px;
+    border-right:1px solid var(--line);
+    padding:8px;
+    position:relative;
+    cursor:pointer;
+    transition:background .12s ease;
+  }
+  .day-cell:last-child{border-right:none;}
+  .day-cell:hover{background:#FCFAF5;}
+  .day-cell.othermonth{background:#FAF8F3; opacity:0.45;}
+  .day-cell.today{background:#FCF6E7;}
+  .day-num{font-size:12.5px;font-weight:800;color:var(--ink-soft);}
+  .day-cell.today .day-num{color:var(--gold-deep);}
+  .chip-list{margin-top:6px;display:flex;flex-direction:column;gap:4px;}
+  .chip{
+    font-size:10.5px;font-weight:700;
+    padding:3px 6px;border-radius:6px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    border-left:3px solid transparent;
+  }
+  .chip.high{background:var(--high-bg);color:var(--high-ink);border-left-color:var(--high-line);}
+  .chip.medium{background:var(--med-bg);color:var(--med-ink);border-left-color:var(--med-line);}
+  .chip.low{background:var(--low-bg);color:var(--low-ink);border-left-color:var(--low-line);}
+  .chip.reminder{background:#EDE7F6 !important;color:#5B3E96 !important;border-left-color:#9B7FD4 !important;border-left-style:dashed;}
+  .chip-more{font-size:10.5px;color:var(--ink-soft);font-weight:700;padding-left:6px;}
+
+  /* TABLE VIEW */
+  .table-wrap{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-sm);overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  table{width:100%;min-width:720px;border-collapse:collapse;font-size:13px;}
+  thead th{
+    text-align:left;padding:12px 14px;background:var(--ivory-deep);
+    font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-soft);
+    cursor:pointer;user-select:none;font-weight:800;
+  }
+  thead th:hover{color:var(--gold-deep);}
+  tbody td{padding:11px 14px;border-top:1px solid var(--line);color:var(--ink);}
+  tbody tr:hover{background:#FCFAF5;}
+  .tier-badge{
+    display:inline-flex;align-items:center;gap:5px;
+    padding:3px 9px;border-radius:999px;font-size:11px;font-weight:800;
+  }
+  .tier-badge.high{background:var(--high-bg);color:var(--high-ink);}
+  .tier-badge.medium{background:var(--med-bg);color:var(--med-ink);}
+  .tier-badge.low{background:var(--low-bg);color:var(--low-ink);}
+
+  /* MODAL */
+  .modal-backdrop{
+    position:fixed;inset:0;background:rgba(45,35,20,0.35);
+    display:flex;align-items:center;justify-content:center;z-index:100;
+    padding:20px;
+  }
+  .modal{
+    background:var(--card);
+    border-radius:18px;
+    max-width:560px;width:100%;
+    max-height:86vh;overflow-y:auto;
+    box-shadow:var(--shadow);
+    padding:26px 26px 22px;
+  }
+  .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .modal-head h2{margin:0;font-size:22px;}
+  .modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--ink-soft);}
+  .appt-card{
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px 16px;
+    margin-bottom:12px;
+  }
+  .appt-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
+  .appt-top .cname{font-weight:800;font-size:15px;}
+  .appt-meta{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--ink-soft);margin-bottom:10px;}
+  .appt-meta b{color:var(--ink);}
+  .appt-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .appt-actions input[type=date]{
+    padding:7px 10px;border-radius:8px;border:1.5px solid var(--line);font-size:12.5px;font-family:'Manrope',sans-serif;
+  }
+  .btn-sm{padding:7px 12px;font-size:12px;border-radius:8px;border:1.5px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;font-weight:700;}
+  .btn-sm.primary{background:var(--gold);border-color:var(--gold);color:#fff;}
+
+  .visit-call-check{display:flex;gap:8px;margin-top:8px;}
+  .check-pill{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:6px 12px;border-radius:999px;border:1.5px solid var(--line);
+    background:#fff;font-size:12.5px;font-weight:700;color:var(--ink-soft);
+    cursor:pointer;user-select:none;
+  }
+  .check-pill input{margin:0;cursor:pointer;}
+  .check-pill.checked{background:var(--low-bg);border-color:var(--low-line);color:var(--low-ink);}
+  .not-yet{color:var(--ink-soft);font-style:italic;}
+  .btn-sm:hover{border-color:var(--gold-deep);}
+  textarea.note-input{
+    width:100%;margin-top:8px;padding:8px 10px;border-radius:8px;border:1.5px solid var(--line);
+    font-family:'Manrope',sans-serif;font-size:12.5px;resize:vertical;min-height:44px;
+  }
+  .empty-note{font-size:12px;color:var(--ink-soft);text-align:center;padding:20px 0;}
+
+  .footer-actions{display:flex;gap:10px;margin-top:8px;}
+  .footer-actions .btn-sm{flex:1;text-align:center;}
+
+  /* CLIENT DETAIL MODAL */
+  .cdm-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+  .cdm-rep{font-size:13px;color:var(--ink-soft);font-weight:700;}
+  .cdm-priority-edit{
+    background:var(--gold-pale);border:1px solid var(--line);border-radius:12px;
+    padding:12px 14px;margin-bottom:16px;
+  }
+  .cdm-priority-edit label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:var(--gold-deep);font-weight:800;margin-bottom:7px;}
+  .cdm-priority-edit select{margin-bottom:8px;}
+
+  .cdm-closed-days{
+    background:#F6EDEA;border:1px solid var(--high-line);border-radius:12px;
+    padding:12px 14px;margin-bottom:16px;
+  }
+  .cdm-closed-days label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:var(--high-ink);font-weight:800;margin-bottom:9px;}
+  .closed-day-add{display:flex;gap:8px;margin-bottom:10px;}
+  .closed-day-add input[type=date]{flex:1;padding:9px 11px;border-radius:8px;border:1.5px solid var(--line);font-family:'Manrope',sans-serif;font-size:13px;}
+  .closed-day-chips{display:flex;flex-wrap:wrap;gap:7px;}
+  .closed-day-chip{
+    display:inline-flex;align-items:center;gap:6px;
+    background:#fff;border:1px solid var(--high-line);color:var(--high-ink);
+    padding:5px 6px 5px 10px;border-radius:999px;font-size:12px;font-weight:700;
+  }
+  .closed-day-chip button{
+    border:none;background:var(--high-bg);color:var(--high-ink);border-radius:50%;
+    width:18px;height:18px;line-height:1;cursor:pointer;font-size:11px;padding:0;
+  }
+
+  .notes-glance{display:flex;flex-direction:column;gap:7px;margin-bottom:18px;}
+  .notes-glance-row{
+    display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;
+    padding:9px 12px;background:#FCFAF5;border:1px solid var(--line);border-radius:9px;font-size:12.5px;
+  }
+  .ng-date{font-weight:800;color:var(--gold-deep);flex:none;min-width:62px;}
+  .ng-badges{display:flex;gap:6px;flex:none;}
+  .ng-badge{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:999px;}
+  .ng-badge.ng-visited{background:var(--low-bg);color:var(--low-ink);}
+  .ng-badge.ng-called{background:var(--med-bg);color:var(--med-ink);}
+  .ng-text{color:var(--ink);flex:1;min-width:120px;}
+  .cdm-stats{border:1px solid var(--line);border-radius:12px;padding:4px 14px;margin-bottom:18px;}
+
+  /* EARNINGS PAIR (actual vs projected, shown side by side) */
+  .earnings-pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+  .earnings-box{
+    border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:#FCFAF5;
+  }
+  .earnings-box.projected{background:var(--gold-pale);border-color:#E4D2A6;}
+  .earnings-label{font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:var(--ink-soft);font-weight:800;margin-bottom:4px;}
+  .earnings-figure{font-size:16px;font-weight:800;color:var(--ink);font-family:'Cormorant Garamond',serif;}
+  .earnings-sub{font-size:10.5px;color:var(--ink-soft);margin-top:2px;}
+  .cdm-section-title{font-size:16px;margin:0 0 10px;color:var(--ink);}
+  .notes-table{display:flex;flex-direction:column;gap:10px;}
+  .notes-row{border:1px solid var(--line);border-radius:12px;padding:12px 14px;}
+  .notes-date{font-size:13px;font-weight:800;color:var(--ink);margin-bottom:7px;}
+  .resched-tag{font-size:10.5px;font-weight:700;color:var(--gold-deep);background:var(--gold-pale);padding:2px 7px;border-radius:999px;margin-left:6px;}
+  .cdm-footer{margin-top:18px;}
+  .client-mini-clickable{cursor:pointer;}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN SCREEN ============ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <img class="login-logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUAAAAByCAYAAAAiVQi4AAB7v0lEQVR4nOy9d5wkV3X3/T33VlV3T9qoVZYQyQn8GL/ORGWttEoIg8ERcCAjECInk4UQOTj7sR9MRmFXGxSRSE6YYIMRSEgorTbNTp7urqp7zvvHrerp2Z2d3ZVWgGB++6nt7umuqls3nHvygSUsYQlLWMISlrCEJSxhCUtYwhKWsIQlLGEJS1jCAcBVx4MLqY4lLGEJDxwP/opdwhKWsISfUCQ/7gY89LHfPeSBMmx2KC6yhCUsYW8sEcBDDMEBiiMSLc/9J14GhOpVD03zlvAjQD3u9Rw4kPE35sa5f7ztwWjgEnpYYizuN/bm/BxC5hMIXQBpAddveC8pHdhHX+u+R8BKmpy47uXkQAm2GBFcWig/LsR50D+MHmUkBQq4fuN78BT7OFcBpZMXJI0RTj3zFSjQBVSE0gQFWXxsdWnoHwCWCOD9xt4EsOEdhJIBQEC2fP5SN7nrFkusvc+r2CIjUNJi9XGPtZPOupAZxQpAEAxD+obOsCUC+GPDHAF0KAI0gGs3vI+WTLP73tsWJYDeCyoJJhkjq46jlGWcdf6FTAcogQBii6pZlgjgA8ESAbzfWIAAOiVTuHnjxyDfJbOT2yg7UyIE2EdfL0IATXG4Zsuay47npPNeZ22bu6/sQfaWVsGPB9I3DzxKA7hh0weZ3vUDJ2ES8sK5OT6/N9r1X8yCOpco4jE8pTpbfdSj7cR1r6ILEongEgF8sLBkBT5EEBRRaAKuHGVs+21odwKsxMzu1yFWoN0JBhsFLQeDaeQyAESW9q6fNDggBTJmyNu71VmuRijNrKiOfM8DXBARMy1NrGMJM0ztvluu3/hR8T/uB/oZwJIR5AHDASWOqPi+ZsM7GN/xAyzkps5lwIn7OdkRbR1p9bcuMAgU4G410+/t3HYXN2y8hNPOfhU5YAhm4F2KWUAX1Q4u4VBCFuEZaoOH6QyCgjmc408A3B58Wn2VUukURXFkliXbQL4IbOt22jpIhxTI93m3pTE/FFgigIcIAly35e/ZtfUb+LIL3hFKW+kdlwC/DMwABbHPZ4gEr1YOtYhEUIhMZP239zjnLtZQMrHzHjZt+BBPOvPFmHjKUAIsEb+fMFyz5YNM7roVZ9DpdGg2GhcAp0gc6yHi2AuRgmXOSQdzSciLf/6Fx/zSp2699dbEey8ikYQydyzhQcASATwEqIXRYMLyVUcxsa2N0UGEUrB3iXEC0AZeD2TAQHWKs711g58HrgdGgK+aCsE5BoZWcdraF4OjR/yChgf92R562INDk2qD+BGQEANOPeMlbL78TXRnJ8h8hqpe5Ix/VvhN5ohgjTwvwrIsyzaal7fdfvvtXlUtybKyKJNmgO7ezV7a8A4llgjgIcTpa59DE7jh6new7Z7vkVCMOuc+1efH8FzgF4EJYDlgFi0kOZHjmwa+BPwd4FXIVUGSQbKBNRS2NP0PGnYo1NwH3usOGB4YZMalaJmTiPs+8BrgX4CVQIe47kqg6Zz7loi8RtW2FkVohBDyFcPLOOmcF3c1alWW3EAfRCwRwIPGQgvKYSglUYGXu2X4pIGE3ERc1AdFzi+rTlhRnyk4zxxHOFj9pgQSw+GylJHVx3LymS+gKyAk9K+HOReJn9U1ciAE7sCJ4P5MS/VeJr3Pc24wgkaKVc7iNKDmXPQO5YvAK4CPV3tYAWRmtj0ReZGo/Q/mvJl1PSJJkiHxVhLF4J/VsX3wsWQFPgQwHIojEGf26We9kKOOeRgihlm431ZgM1h52FGc/dRXkxsEEsqltXBwEI8XpSklreoYYN9Hi5LBPY4BlCZKiuIXIUYCXLvp/XSmJzGCVPqNBHg08AkiJ1gHieTV5++o6mNEJJhFP6dQ5JH6gS4t0AcXSxzgA4b2vXMoSgCCaXRVeQC6J8OBH6RTQDBw3vX0f0s4QJiRoPzb9R/Dlbvx3hOCoap471Hdm6DVKgsTxczwaYt2J7D23FcxpYvzY2eeeSHXr389E2Nq1ej/H+AqIhf4BwKPBZ5pcKmIfMLMvmpmLRG3TlXuEOfd9ORYuHHD+znl7AttXy7USzg0WCKAhxhGQmklIdSqmweyhzvUXM/VteIQlnCAEJQGyoAAs/eya/utBKt8KNUOyJfSRDH1JI0Rbtj4Xp6w9uUoWinm9h7bTRvfy46t34n3F1kFfAA4EngG8A3gVcBW4J3A34rIr5pZ4YxLFJ5rZp2822aV75KwJKI92Fjq30OE2ldBAO/AuUPTtV5c1C8JC3IrS9g3UuA/rvsY11/+GqbHt2PmcXjEHCIeM0F04cMsHl4yzITu7CTb7r2Na656Py1qp835Y+wAZx1EuogqAqcRrb9TwJ3AD4BR4JUCMwLfFBgXKMzsaR75LcWJWcDKWSQGCi3teg8ilgjggwCzSKwOFcfmq1Faivg9UCiCkgLlzL1M77yToj1DwzdIqn+Zy0hIcJLg9zicJL3vTAWH0GhkeLoMNQs8c2Oy1501x8oCQYdF5BwqwzBwGfA5ohW49pv/KPAPIpKoaiEiTzIzEZSdO+5ly/p3L8WqPshYEoEfMGquLK4IIxJA5xze++je/ABgZpS6GBvwM84VygI6PKBh0ZzuLQAOMdaIycMkWtq7AkHiT2TPKA3tmWANIBeRsiiKO52Xnd3ZMechyY28TkzRf98sy6hUHw70GHABuJXo3gQxV0JJvPcUcJ2IPB+zBnBcPNmcaFsjrVzCg4klAvggIBpBjDRNKcIDU2PXXKQIS8LQAcAnCRQl127+W7J8B6M7bm9lRgfnHhZC+CeEnwfaFcflXK236L8GFREUQVXVGS1x/pkKV05OToYtmz+cP2ntiwCqrDzWi2kUM5xzqFpGFG2diDSJrk6OuTSPU9XtZokStTMzE5GgVkppQnOg9WB31888lgjgQWNfHNd8g4eIkJfFIiLM/dE+9N/jZ5vzqw0Ye6oZLETThFkAFOdoF2UQsB96798EOFUdcc79FSDV+bXFKma1orIEO3mlE/m2mi1Dy2sDzlavOIJT1r4o/liqjDxm9WmICNu2bePoI4+ZDsG2S2zoscDvAF/bvXt3sXLlSsfcAD7dzMQ7h8Ft4kzFEskGhqRdLu15DzaWCOCDhEOdrWXJADwfc5yxICI930mNxgdOP/N5tIAbrngNUzvvNQ1hB9EdpUv0y2sTo28gyppG5MRqnnC3qH3PhBsErAyhaLRa4Ad6Wg2z6OjnxIFFtq4Iwpo1R+Fc0i7L/PIk8U8vy7IUkdcAu0ZGRj5XtWEY+CPgT4GOc66hql9wiC+NMLLiCE464+IlAvggY4kA/shxkJzfXjqun23Ob0/0UocJvcMsKvhyBfHLCLadqt+K6pwUtMo2JXUOU5g/OA5IzEIBmBiEoHTLJJYpkFrfaxXFtCqtT4rPhul2Z3Ai15Vleb2IPLEi0h9pNptPK8vyFuBJwK8SiaGB/oOIfW1kZFnYMTZDoIE5WDL8P7hYsgIv4acKZjFFqIpQAmec82qOPOp4qqnez1AJc9l4+tn12qPJEQ0VFrlM47DDDmftuS/BZH4a0toQEoDTz3oFIyvWkGUN0jSdAF7qnPu2iKwUkawsy7OAi4BfJxpDvJndoKpvU6y7e3wSlcwKG6BkSQR+sLHEAS7hAPGTrXvsVxGIgHeOzAWsgELTymm513alqldVZ2buswTX5iYFilqVkSUJLomh3GUl7vbUHH03NyDNhlAciZZZo9G4pSzLC4AXAs8IIRzhvW9U1/9fM9siYpea6VizNTjUGloxLa0j5CnnvJT2fqJOHlr4yZw/SwRwCT91MIMQQrTGA0aSRBKnGXM5GWsOsE5QMZffYO7zXuujZg9TwEsZKaXNnVAAHR1ALaG03ChLb2b3AG8CPpokycPNLAHGgV1mdo9zvvQ+cYetOWb6pLVvkU9v+CDtMqbCt58wgvHThp8CEbh2QFgQso9jz988KBDbU6X0YHT3g3Xdha//UEnF30eYnHMO51wgGjtKoutJRVliZTaVeEAf3ZwziETjighGpIpN4Mb1l3Hj+vf0IkOkuvjJZ7+EFYc9jKwxUGCi3nucc7mI3O2cuxm43hlfc8YPgVJwMjS8Us448y1+47V/y7rzXvJTQPbcHsdPJhblAKXSKLvqh3vWKDiQQdLqqGfUovdjzkW+7rbFnE6io4P2eWHNfVtfS1iw+6X/Gv3s+cHWc+0/O6BSzt370Khv7kc+u/08ew/9NWgPpLGyhzNif/3bfV1/T8yveeuqPp6ro8z864nufd4BGcTN5n5YlqWkaYoWXRGRSr/nfHXFQKRbEI0h9TSvSxSImVmWplLms5YAicA169/OzntjzO9Nm9/ByWtf6zZu/r966ll/gimccu6r5ZqrLhHXmabIp0xDYRpKQgjg0ljtLRpwvLo08QNH5Z9a/2F5/Gl/Rk49L3VeXen9zYS+vvIKYe8zdN54LTQ+B7JODyX293wLjP8hbV+y1yrv16VYrIHQRLlpw/toMoWq0mg06HRyfJIgi5RuCaQ85ayLyImmrv7qVvVtotOoxphXK0mIs/DLm9+H0xmCKWnSoNPpxMgKoLQWp5xzEW3omywwVzFNxQMJSMa+CVlVg9UCTgDzVfjU9Vd/mFSmGGp4iiLg9iJCffn4zDAtAdKQrgy/c8aLLBVITGIkQVXJbV/V3+aSpS6cZ7B3RwHbBzGMhGluHDyBhs3JefuCEcelKr9YbSTzI1tcfxlOq/8SFf9pVQVtoV10T6JaT+Aw79VVlobIbC0U/F97DfedJ4rrI4ILb5H1DwzwaYO8LKoeklhTpXJgqX5ZEztU5lVwmwUnZuVgqdqe2HUvN13xWnFJZtvuu81lVgREmNj5w+yG9a9WtW2aCb15+cRzX4UHuX7zX0tLOriKnBdFYYDFeHENKgP2xLUvshzMeQgaudea8aiZDwGyJFqGgy5suan6SsrYTwhiThxqMZVXytxMqc+vezCw9zo9eJ3dXETUYt8DOFHSap72b4B126R6U1pULfTPm0OFxTlAjBRjxENWjrJ7261kWcZkWWIqBAznkn2KRYGU6658C123jFPPeSkFGh1IXUqpARHpEUDnHC5E0eL69e9j2x3fpOk7Vf47h4iQJLG5LlvONVd+iDMveDETIaaJ8pRoUATEg0uBG6/9O5NytgqH2hulNDjpzBdIEYsaiYClYFkYZXzXD+hIoCjCHqLsHn2khk8Es5CNrHlEp1kZBbVoE1OhPvgio8NwoniDxIOV8IUtHyYlR2zf0yWQkFvKKWe+sJpgcVUZMZLFxPURPjBCLw5WFZoOblz/UVLbO2TLJBJtVaUMgayREEgpaHLamX+OCpRaxnA14kS8duNf42iLWElRBJJGhokSxJOXGeee/wJmiyiwioMgWKn7LgxZE4UHgAFAnHPODMNKGd9x5wDQToWAsMocQ1a075wa28pMd5u/Zv17w9pzX85MGYvZA3bK2r/AV1461XX7BQyL22fsh7yIX6REotACtlz1IVJf4gg0milFUeBdSlmWdMuCNI30O6jgs2FOOf3PytxIyzivFYvD0XCw+aoP4SXvifTex31ARMhDwqlnvphutU77JYRDAalIl5PaxyiO+3XrP0ziCrwoZVn26ImrCooGHCpNTjvzBRRAqFLOzbXt/hPERQmgB5Y5uObKd7Ljnu+hhYFTIMElDs1znNt3miahkIlddzAbGnbdhvex9pyX0a1cFGqEsowcRSVqX7f+QzR0lMFWSqfdRtXhvQNxFGVMMOCsg8zuYMPnP8pTznsBhBIP0gLZfNXbpZkq3XZHJ7Z+04q8Q+p8FD0A7z1FUeCcY9VhRzIA7uqrL8OJZ+1ZF7rrN77Jdu+8C9GgofKGmMe99RFDAZJGSp53ms4lM+Oj29Obr3xzAKQztR1V9l3395Ckaq/bEesRJ8BNV7+HsjvOxH3/QyjmaortS7xotAb4wvo3Ya7FaevqxKuRimulAas5wFp8SiVGul6/8aOM3fs9EvYu/F7PiLIq2lRqFP1WrD6aFrHYhQdpADdc/R4sdNh+z3/F1LJOKIqCLMvi+UnC6sOPJwvwhWvegUnGU057BZ2oZjXEPViZcqZBS3pRIi4hMneZGA2D94nqMSr2rE47bBtoDSQzu74fblz/Lk4689WpCoVZbwosNOICJAl4SnJAkj5644Gbt7yb8R3fY6rTifHlrt5UYg9bFXoHccMRcVx71duy0895fdEgEtKrrnq3NTMQ7bJz+y108zbNimh2y6JHcNJGxr9ueYu0dYDT1r2CGa2I86LYh1RSvfZTBle1JzO4Zv1bGWoIlAVju2+hO9tGnFX5GkOPpoQqykac58ub30kneE5f90py5irmPZCRX5AA1rqjFLh2w2U0mSL1gkoD5xxlWVIGxflk0YwnhplpSUJJatNxpxfohpzExWSUVok+iUX2fKDR4ZzT38znP/NCOm1Hs9mkLALeJxURM8qyQzGxlWc/6600qp31mo0flqZMM7b9Np3Op0xcgip4E1SpSa5oCT5GsbN7+538243vsNtu/19zkrDxMy+33dvvklB0aWSZi7vRns83n6LleU6SZB1EyPN2uXPrLWRZ0waHhiVrDFi321kwYP9QwKNkAqnBjVs+ghSjjN793zgKERMaSSKq6mDu+fe4hJWzu3T3zKg2WyN2w/o3E9xyTl53YRQdRSn7wrwgmkyv3/hROXfdCySzMbxNO2dFP2cDzBX+TomZpRIPasHyqW1245Z3cdIZr+bq9e+nJbOWT29jcmIXSVTFiZaKF0icWCKKEZjadRdXfPqljG27haBObtr0Niv8cp58+oskRwkOC0ovKuQQYaJ67VY7fy2Ne6AtMGKw2hmJBSg67SJ1HSZ3/SC5bsNbHTSTPQpi2vxX7c2NighJf9s9XWZG72BmYjv4BJMEqYbC1WNSqWVrBgJRpkZ/mG/8/JtoDQwiZYfx3Xcy1ZnAeSi6ZVRruOgCmZjincfMKGamuO+Onbb6yBMkVbh5yz/IaWc+x7rVRh4M0jShW4QDzkwUaYn2RPnrrn4/iU7I2Pbv03aFaGnOGSLiQBE1mcceu1hPQk2D7dp6iwVSbtjwVixZyclnvZC20pMs7w8nuCB/4onE74tbPsyQzbJu7SvTKz7z0qGJ8bGBvCgzEXEiotFIoguaeeruUW93O591lh12NKef83YKD50QF0gZuQBaDr/p8re7JtPl2La7bNWyYWanZ4a73e4y51PvvTcL5gDxqS+KopzFJbOrDzsqP+9p75DPXv4uJse2at6dMKxAzCqROR1U1dm+5uzp74XO9XfUcJmlEjOGDDEXIbBPWCx0sx0IZVluzbIsHHbYGs46/z1y5WdfzdjurVERKJoB/4O5RxKlgP5u6lfHvBq4FGiW0uiuOPrn7SlnvYK2QLEHD9FA+Y9rPhRTPk1M0O1MR1FYDFMRcwKii1puzQIi4kMpmIim2YCuOPwRPPmsV/f0g0qKYLRcyVev+yC7t3+P5cNDTO4eJeQ5LiYw2ec9ov7Sqp0dkrTBwMgKBgeH5Nx1b+Hzn36lTE6NYiFHRKwKaRMRaYozxbsg+Lj7VVmazVKCONYcdbTNMsST1l5M6aKqpE5FlgGD4G6++n1+59bvFN66TsRpCOFR3rvvAzWrIRUf0a+KmgbeB+7f6NVpxlVdUhtLXoazrqr+YZGHO7MsS7NGonmpIahPQrCy1lvvgb7OqvnshVJTK7JHOiHTfY9l7zciGEmKVUoY0z7N6RxvVs0LBUwrFlqckSYNXDYEScLAyDAFDU5b97ooHXjoBvDOV1UJFyc6CQkpOTdvuIymm2TbfVsp81m8M7J0rm/MzEXpDu3bBKT6Duecl8RLkQft5kEbjZatOvrRPGXda+gAkni6pfW1iypRBYsS632KwNdd84+sO/PZfOurH0s/+6mXusnJyf+b5/lvpFljKoSYl11EZsxIYmhRb3IUgDdYBgx7516Ul/mnZqbGufG69zFRLueUtc+OKaOIotTGq/8+5KPfCu3ZbTgRNzk57lF5nYj8sYjkqrrTiUvMrBlCONw5+SiEN+7eeY/79MdfKu2xHxahO+18CM77JJA4Twx6XwE8xsyOBVYDasYMMAncBdzrYlaOnKoYkUTafxHw58DORUcXUNUSaIpII0mSt4B8fOfoRPef//HF6dTMdFBccA80J1aFqrhS1MMBTRBp32dj932fJG3RSIRQkjqXBBVVh/yyOXcksIpYhS4jPl8J3AF8P3XJvWVZzjTSRM2CWDmZjG/7gd208YPhKWe9JD6jFLjKtJhPbyMJk0yNTRKKgMP9EfMN+P0HQDtuOoL3yQhwKxY2dSd3hPbkLveZT15IuzMNWirgROQwETnSOefKslzlRGZQ2w3lLjObNbMqdCy4RIytd3xDDz/+MTroYSoo4ioDwmIuBAeOC5krVD8L8+w0AVhuZv8uIhrTYBHyPDcze5xHn6OhsMSlvjq3ngT9xvncREcAE7HZ6u8B+AdiAtVcxf0c8KS+NQaROLfYBwMjZjcLxfd7txOCs8ruE2OQVwOHmdlw9XyjIrILmBGTblkUSjHqTZTZ8TuDZAN6/fo3UviVnHjmhXhiSdbEJz2ybRXTEYmX4npGrZwm0LIxJrbfQVOEXAJIQih7hOkERB8e2yXLRGSQav6IyDbn3H9nWXZbnuftLHEuISSEqXLAzdiQhw1X/S2nrfuzyhWpztZdG/UWxz4J4CmnP5svbPowP7jtFtXZ8UJVr/BJ8t+qerRz7qmqusx7FxSrJ3qdTQOgY/BZYLoM5Q8Sl5DnOZ1u4Ix1zwYR0iSlE3VU7vQzn+u/svlS3XnPRPASXOqkQOW/8rwMwK8AZyo6ivAPotICbjYxMdNyamK0CagXVLxPwB5uITwFON/Bw4gc2qqqQwNCTiQA48BOgX8D1gPXVm0vgFuI7X8k6CmLdaB3iPd+varuSLPm7Uk2xMxsm057goFmI3JH0OOQ7q9JJPNRG+WJVOwLmy5hWSPn7tu+Jz5pYipYDNtarapnAReY2S+o6nIix9Lsu1wXdBKYLc39j/fplVoWW7z393bzkCVpV7MwzvIUdhdQVJz69Zs/SJj5IZ1OF+976/FizD2aquC7zHHNBXNeMnUR+AT4FrABc07MwtTEKGb262AnA7+tqg8XkRXAkIioBtpmNiXoLPB94GpgIzBmznyaNjRzSkvg6s0f5OS1L4FKXHMVXy/O+uqz7Gka0cU8nu4jboLLLRKx+gLd6pl+S4wG9PZzL+ZU4NcMnpNG60S64JUjQqVhEZkj2V1gkwm3mhlidjLwEaOSWWPb6xC+jLkUW0BPwnlJ1VdUNpYGMTv1ecAjgcOJRFBkTpU2Cdxl8B/AZxC+Gb9PzGNM7LyDFUdlDKQwVYD3UIRQZda2eaoHh5FIzMl4w4Z3MyDT7Npxt4iJlKUmSZIUFvMfngk8E3g4yNHAUEXoa+d0xGirhl2dsn0vcY1+3ONvNwdb7/oh6z97MVOTt/Dlze/mlLWvJO/LnXkg+9/COwhxwQ0mcMPn38HYfbdK4ryFECi6Xd9opH8dQvnHIYR2EldCbchrV++DwR8iuj5JktI1WgwuP5aTz34DbaCoamsZhhNHYqUMgn1h49vZesd3aCTmHF6r4f5r4NnAW4C3iUlCNAwlZlZUg9uVOLAXAr8LrKwMTLW+ZgdwLzBDFG2PqCaArzqgDXwbeB/wKeLuWgLPAP2HRTtQxAGPFZHvDg6taDztWR/S9Ve+pZya2JrmnZlaZwRxUP+name9Ne1XBF525KPt5LNfiUtADdl41d/Z+ev+lBs3vob77vo+qWs4zGn1PK8A/oxovWwAqNMS2GbwPWCXxGd/LOgqgEQSQgjtLPFjRVF8qJGmHyjUtWdVZNVRD3e+tSacedbz2bLxo7L21BewZf3rbXJsG2WRgwUkyJOrexfARwWOrvouZ86LQ6p+SIBviMivV5//P+A1Bk8ws8Or/qQ6v0tclIebmZO+6eycuxX4GxP9W9VyIh0YIGuNMN42RlY+TNadf5FN55H3aYHcvOm9fue93y2cdpyIVCKwr0Tg0N///eqQaeA54D5PJIC1MtSqZ20CH0b0YcC5mNtFJCgKDBg82szGBM6pxrND5L760alE4BngxcB/xr503zFkupoixyH664q7D7gAeHnVN1rNqXlruCKAfw78Y/WnPwP+AnjcHvfuAmMSmYMeka4m5DSiXyXWLbmpLHN85hlacSTnPuP9XLX5/7oTT/sTTNCuARJtAVLxXrUr2xc2v4/2jlsI3XHUaqcW1yISvecRC0TNReKYm1aRbwO3O7MRRB8hxqOq772IiDPGgU3EDNv/450rSoSQpIwcdjyarOSktS+KyTCsthTvmxPc5zdlgJkunHrOa1l19M+z4vATSBrDJD4LqF3lRDTxfgA0AU0rl+cWqAMdEPQPxUjNzHfaJuZWSE/TUjkuCx4zESe1dnkZA4PLcUjNOfymE1vnxBKBzwt4xAJiKWali8rI0om8RUS+JSIvFJE1IpJXM3lU4NUCvyLwmwJPFPS3BH2MwGME/shgg0V15OMMPmlwlcEJ1d+aJqQm+IUOxbxizoRWMGViaqa4euN7wtrz3sjKlautdoLpPw4WokYKNAPcePklyOStXPv5V7mpsdHmrl3jTvCpiPyJiPyHiLxKREbqFFEiss3K8Hyfuse0tXvqTNn+/STz60Ts50XkPcCEqlqapg7nV5alvq3Tzv+jQNdOJ7ndM3FX2H7nN5tX/r9XOWZGZctVb3dPe+rbZM3hj8K7rF5sXyaOzfUSF3KNASCVCh7DI3iknJ6YClaG12pR3uC9P1dgTZIk/wG8HTgX+HngeBH5JSP8hvN8WLEdJhQmmivhUSZ6qYh8WcQ/MXRKKdszMDNKd+ctXHf5O2lA0qTSZztf+bT2H1qrFPqHZc8hCha5u0kiwdgN5Kra9t5Pi0iKuUHFuUqXXPtfTwNfB+412GrRTtWyeD21ud9lIVhLxDtwW71P7zCzrzvxMytXHIHQQMTdI/irPPKvHrndi+VeLPNiqReTqk97RzXuEyJypIjcJCIfFZHHich2Efm0E3m2E3miE3mEE/kFEz3BRJ9uol8z0WmBjsAQ5k42leswd0mSZEMeL53JCdZ/8mVMb/06/7r5PdIwJAHEhPhPe1EyX7rmUsbv/W9Ctw0WHV9E/ONF5Erg74ibH1mWzQCF4t5jzh2vZL89vOyw3y/NznbO/Waapn9KZF7MzEqiOuJZ4L6cqHv9Vf/3U7Ki9CSdLhNbb6ez4xb50tXv3cMPtp8X1HnHggSwlqED0FboyrCdec7rJMsylq8YIS+614rIl2ICW8lFxKpDqleqFEC/oaoyMjScnHnWi3ywegudU3KmzmOGZQmcddaLWLF8Wa0jUWAtkV3/nIh8t2pai7lAkV8HbiZyTWlfs1siMikifwr8FbANVEXMi0hXRHaL2PdE5ONEjvExwN/H33EOMX35mewd/LJ3X1Vsv6pi4lCSSi3i9pS17heyLMMD16x/BxM7b7di6j5mJrYlE2PjbsXyVUPA3wJ/A5xA5JxK4hy8D7ggSZK/L7r5pIi4x/1//x/ELMW7nHNvcMZzzCzP8zwDujgRvHuMWfhcmibv/sVHPwLNxzvTu+9JrJiUc899nay/6oPp2rWv4ugjj+mJPosdC2BwYGDgX0Tk7c65RlEUV4vIiXmeP15EXh9C2KKqPyjLctTMJqanp/83hHAR8HwiEcqI3GUb+AUR/1lVfXbodPxg6hvFzKh1J7YmN236mPUr2+pxqtu8B/a3PxmR8FHp+9IQAqq6MWBXWpV9VSVOMsV7FRna4z4LzoVms4mZkSRJzx/2iCOO4GnPuJRly5Yt0qRFcQZxY3oC8F3gdcTynM8C/hn4VyJRGReRe4m1Sp5KVAXVqhIHYGavEPzlDn8MZSEz49tIdEo74/falive7RKQej276uSbrvkgu+7+XxJrI5QCrgE808yuNLNTidxwDpDn+aCIvD2E8DrFxlesWNF4+u+9l1ar2UySZKrdbv8TcBJRdVLTtG51q9f+4bN+//KQFw+ToIgWjXx61CZ23i43X/M3rskiHF7/Q/ajfyZY1cpTznoBmzZeQt4Zk/HxUYqi2y3L/JOVHqkWb/qvGYis9TpUpD09Gq65/NXJFza+d88bStDgHLDx8+/ixk2vSyZ3b0/AdZ1xuDPOqX73f0ERMUSsLWK5iPxKNWCPr9pQO8s7oojyOmCDiM2IWFPEPKif41aR+JlCRO4VkecDJwP/Qtxl/h/wh+xTlaB7HHvhkPhidLtdBDjr7NcyNDSUqgDmksHBwVaz2fwXYrnFGp4ofRREbupfi26etbJW2pTMf/u/vpWUeWGJuEzU1CEbHfJGL07LshxIkkS895aKywZzu/Ce73zvk02XrEqdy8fHtutn/uUiVQtFYdH9p5+r2hec1WJZb+Qf5r17lkuT70giz/HeP01VbxZnTq1MxVkhzsQnkiAqIyMjWhHTK8zs5QBmlppZq9qA1zjn/j4vw4uDqWu1WmRZUp5z1vPTpoADie5TWrk07TVeCzW/LgpX9ymAiIio03an7HRKyo7L3NUi8mbn3KQRNMlSaw2uwFxGu5OX5qQOYNknOpV/X1mWeB/1adt3bOPyz1zI5MROYtwK0V3mwN2p/pio//5HIkf9DkG3C6rR2qyJiTZNVKKl2APcDbzARP/TRBFUnJgH1MxOwckmnDxKFSnLIM45d+75r+zFOkGkTjdv+QC77/4GzkK8E4IJLycadlaJ0RWbs+4qbpOJf7dPJA+hzKYmdnQ/84nn+yxxnaLoNrz3g0SD0IuB+wJWuVipBKd+yhXr2pncUKbuV8qgZZpkg93ZSdt299f8tZvf11ebceF1uiiBVIA0pTDIgzMjkU6ny9o//XPM7EoRuZNIifsds2vdG8DpInK0hpzxnXfiy/GoxJfat1TxFBI1xVPcd9f3KfJ27Xt5MtEA8jXgeuaU6TXndwWwhrib9IcUGrCZyGYPAma4TnADxapjHl2sOPLny2WHPxJLhlDfCiaJRX8eUhH5noj8AfAGohX7dxbrnwcbYkrIZ3DANZveTpF3C1WVoigaZvYJMzur+mnKnF5IgP8CPiFAK2vk3U5RhNAolq84One+WZRGboG8sqj+DfBfFpe7RR8UC0kgpKX9njPe75wbSERs9+gONc1JIjFgHy4e+0NiZlvMwulm9kmzoEHIVDK1ZKAkHXSWDKTBNV0gFcWVzhEqZ9//a2bXVM9YEP3mOiISgPeGYOcKXqanJti84a2d9Ze/3Tmg6Ez0jFH3w0ewntshaw6yYvUJrD7y51i55mGYNHcYPri01V11xKMZXvUIfvf3P8DyVUeGrNnq9p27T/QXZy/LOPVDKNg9thPrhSgfNMaIer/nArerkARxjSA+CTRcKY0y0CgDDa94Fx1GvBBVGK8hSkJUbS/NLJRl+Usi8ndJkiwHI887tnn9uywBUkpaxKiezMZJrF35jztvZq8D/pI5A08P1cb2zhBCJ0mSxDnPslXHkg0dHppDh2Gu1fVJ1iHSlK8QDZO1dJirWSjEfO71hKB6hff+MeA6IpaKz4usoZamkCxC5ZL96aXKssQZnLruYq6/6hLLuyZX/83f2+Bgc7cSrvbIY4kTUpkfZqjAL4KuVdV/KtXKHdvu5caNH+Lks19MoPIJA6656n1+cuI2S5KmoWKqmqpwNlGp/FdERrRRdeDxwD+AHh0/u0Z1v5I5Q8yn4/014MyTtNzIYT9XPmndRYjDaYDrrn6/tdJCrJi1HffdFZQ8ONRjTkTkw2b2Q+DDRAX/jwGKo6A9tZXP/b8Xsuu+O5mdnXZDA01CKD9oZTjZRUv2SHVCgzkT5xeBGdABccx612TlUb/MGWddyMYr38jk6D2EskMqDhWmgC1i/Dqx75pAhmgwrO29/4M8z2/z3r8tSSRMjm9PNm14a5ia3O5KDcHtV0swP7YY9HbneFYotI0nw0nh02beWn6U+GwYM1OzKnwkzMrM6J2Vd7BZjJp0l4KcblZbb0MLpO2cy1T1A0XQb6Wp3bL1ru/aQGsoXHPFK/3M1I5oDL1/SliI87psDK12J573VlHQJnD9pneza+fd0ho53E465/XRKiHgG4Ngziq/xoO8Yewnsyr7zP1zon8fUaXjCg2piVjSGCyWLT8Mnww5NY/z0Mi8lrNjTI7t9EW3HTDnxNkXReR7ZnaEmeUOEzPzpq4oC/1tRF8r5i6enZlIZ2a7jS9ufu/s6WtfzvVb3k13djfb7r0dURcfxNzvI/qXQCG24ET5ZtDi37Ms83meh9WHP7I89fy3URB39OuufKvs3nab93OTaAPwNOCwOC6WmArOpCNwPGofM7F1JTqRk8hk3rEyRCK3N/8X+3m/+QDNDPFQBOjYsOFbMjIygohaUPsnjGcR9U9532meOavZM1ut1sfzsmjjIWUSXwdyC+YNy5LAbNE1ytK76PD6G0Tu6/tENxXH3O7xWqKSfJbI4dWEt+7g7xDN5WY4CUi58rCH2cnnXCQdkDLmyLBTzr4wKhQMue7q94ho28Z23SsW2kkVar/ezI4D3r2/PnqQYIJioUN3tg3myBKXhlD+sao+U0RmiL59/RxGh8gZXQ+o4dqlS1i26nhOOetCSuD0C97ClvVvZ/q+H0A5C7Fs42eJVrmVzFlrPeBVdTZJktea2f8mqftcoyFy9tlv0PWXXyTtWecrPXLgwMnLlPfpmFlo4NNCE+day49Izjj/LZhDzWK8uxm0Uuz6K/+S8V13uVDm5hzezL5qZt8S4ZfNrKzcL1ogJiKHqeo7ZmZmntZMk2DljNu1fRJXOUjXTTxIoiREvWNotoYpQXJiUoLCrfYrjhjmpNOfTyfmJ/AeQjDxZVnWtYPvr+dTVXPkfp3+30SdZJY109JcSxsjR/rTz39TP0tqlS8pm656c7nt7luTxIfCmWsAfycivwNkxD42kDT2Ny9B9AZvbkuwTmts6/e44pMvYec9/x0NS3V6JXOPAS6h4tT7H6vv/U2ZT4KZpd6lIWmM9JzvvUNyRnyaDeaaj9e6v68QdYGnAlMiskKcK1W1mbqkU2j4LdXybUmSvGjTtTfY6eesSK7d+IHyjLUv3ecg7JM5rFkJh1AECEnCWee/gKOOOYYQchFnAvoDorhZo2+7d4BTw/3qbLv7K845sFJ23fd9btjynv5bqXPOVBXvfS1WrQU9DnQT0Sevvu4ZVEVk2NsFoEMkkv9JJMalkhYjq0/gpHWvdTlIcI4AVgCzBtPRucueuO4VdtI5b5DBVY8MaWO4QLRwniDOdu2rfx48xL3KYooD6DNcinAccEm1gFvM970sgKbANoGvAgRJk5E1D6fjl1G4uGNMODjxvNfRGllZ5b/TFPQ24Bt91+nBOdcsy9IDb/WwfGZ6d375Z17Kzp07qHU5i2PPQCHXUDU3NLIyz1rL08EVxydldrh2hWJGKWYNnbXIinYUTjzrTaxc83BVcwIUlSj8BWKHODHnxGJxSxFpi8jZaZqeGgwfDAPXU+btiYMQh3MxRcQ0upl5pkrc4894Dk84/fmWC6GMzxjUQERCkiSh0gEeEl3wgaKaLIfFD5p3urNhaMVhdvr5byqn4pZXH2EWNPeYpatoDAyXRDVQwNzNZrYj1nKSRKK3Re6dSwWfCf5lTmwgEWl32xN0pyfiRKjC7TGniF6C6Br65i9961UMxLhJRLIiD7m4BmXwqYJTfDKjcMZ5Ly1bw8sRsUCc722in2JXccsVZyp4vDMVzbz3OC/P8tgZZ590inezU2XLpuJuvscUmKNv+4FhKI52GalKHrwlzQFCDKVR4FMVN5LBvN21dmVpeu+fA3i0FLRL2Rmr9AVU7u2lAa4oiqIoy0cSCd0s0chRJwzJgDdX1x6oPvc/Q6vSY91QdZQ3cS5pLZMSLFcsD8TcKJKgLiXHWwdHTlR+rD3/FTK88hiRpFUGc6Xs3wj8YKLnI1jpSkxE/pDI9dVcGsyPMCiIHHBJFZlz5tlv4KyzL0Q16kJM4zE4OFjfpyRuHrcSN5BWdW8zs6CqpXOuAB5dFMWLQp7Lrl07m1igFlUPUq9W5Hmuz/j9D9BsLdO1572hOPmsF5ddQ803KUl7x2yITlWzZYNAw4J5A7TyQADmwqaqtra897Oq+rIqtGqoThRQz8t+q/0Bog4Hd6ZKQ1BICGRakIY2iXYtA0ljlhOh5xR88OLvIUN0s63WhpJUyQNSuiTkOHIcBTAd4MQzX+xWHXYEzWZWZ526G/hhkiSlmZVmJmaWWcSsmZ1mZr+FBZppitT5uSDBXABOB06tnn+hTnBE9c1Nzrk8SVJWrT6ctWdfFBJIUglI1f40TX3kQAnENf91optR7Y8ZddfSs8kNO+OlierqRigaE9vu5OZrLiW1hXNX7pMAzrfuRa6kNDjt3Jez8sgTyEurdRRfMtEv4SRWypLo82iimKgg6hF9KuaOFBEB56fHd7Pl8veQUdncuxNY2TWgJc4eb6KPAa4XkTuIdDclEsVf6Wuz7dnMihB/EzBnKqBoDLEyBTPUDDUlmImaEgio5ZW7/Kxip6x7NSvXPNKppYmqpWKu3q0WPA4d5mspJHpVIIYTwxA9DtEXWsyI52I3a511Kpe5+OL/IH5GTO26q/+y189NhZEAQwrOcqrwreop9D+r+0cTeXw+EdQ7MRG068T+xIk1vItlJGPspuJszhpe1+Otu0arBkIV04kj73R5/SueKIlPQx7V5RZZ2dqLKR7R9wRIRxhZeTSBBI1JCb7ZagzMiDlxzpUhBNEyRHIYNPPifjv1yWO9uCmANE0ZHh6myszcqyS3GPYY4zoHQXTkqyyRJVFeD0LMKF05+c27zn7chPY+rDqqz4vMvb19G/vuCzhD+qSqPeaZogIFWA4SxNEti17rHf6rYs6BUzMJFREUzKLfGu5PDJfM3ds7wceoG2cvlRggEJUPRuWyK656Lici3xWRfHh42EoNtFpNGg7NQBuGtYg+hkV72sx6O4kQN/g6bFDq+SvmRKCLiRPjyQ79P940uNBlbOudXH/V+2hRc4JzZO+gaoIEYDZA1w1Z2myhxVS9230Q7AwgVNEZvZL21ffDwB/l3fIdkkpWdmbC8PAkyxxs2vBmdm67B1FVcTJC9MNriMh1wFYi8esQXVIWTU7gvb8nhLA9hGBps8nKZWvoamp7yCHRiN4LjQQzR8BpoCSABDJMXa/c4k8AhBgFsIy5DaHf9ahkLiv7/1LFrDqU0W33sOHTr6Q5uAKtOForZxjdcVdFuHr4DnO6vx73Wb3W8+Q4MzsNWF9N8EWpSL1D7RuxBfWD1MSz//wcOGPdn+NLuHb9m9m9/U4Tynae5zuAh01PT+uyZctQVamSICTOuYb3fp2Zfb1WrTzveR/j4x+/mLvuuosqRf6iLVv8uYye9B83/R7Jf+Dhx4cQtvgQGRDEEyxg4movgIqlsm3E6IuCSi1XnZYSs5mdCqxgLl6+ThX2a8Av9d1mIdoM8G0TbGxsjMR5du7YxoYr30S39KE1MIKqkrpg9935nXnpb0XkbqKV+gTmQiz7bQ4ByAQ7H7hWVMFyhhshWgldtGfUOAgCGIe4A5x42ku44crXMD06iXPehWDXhxC+5pz7P5VYrPSRWRER83ZBu2h/YDgd7AYCncltXPXZV7Bj251WdDoOUSfijhXjLOD75rgJyCs909FEo0i9pno9Uu/klQ/VD0MIM84nkrWW25kXvMtmPdKtOIy5UxbYqn/yYH2vRhQrVGxe7GetYKvDiWaJPlMF0Ii1akt277qbZGJHzG7tHF4gS42inJeu9XZgEvSwuUsDc76VURaH84kE0ANl5Ppq76cDR83BzFHavUllPWYF0bqAbyLilei7uTOEcEKz2aQoClNV570PIiKqaiGEE83sLbVz8d/8zQvZtm1bL6luzQU+EEJ4aPFjJZ22wPvaFSaBef44tWJ6DdFYuTF+1oQYfXYicJxYTz+90B4oJnwHsLKI5KJws2y7+wf4NLOxYCJipKlHrJyXU1Mika3bVqejqddEivRS3pwKLDPcRNFpU+STJBIj3OY8aQ4ygZYCuDSaqVsrCZaRB/UiUmRZ9teqmppZRt9oVhMtlGX52MHBwROBMvUiZXeS2aldoAWImohkIvIMoOGc20LkSIaqyzyeuXjT+T1Z+aNVnvn3ZFlGCIHJyUnWX3FJNODwYGuiH5RFVDc5AEcCv8wch1b3b02c6t8WxLjnBrHebFqGbpolkiZSpq3M0kYSUiFPzUIdqJ8wFwsaiBOsYC4Leb9cCnGHb5pZqHRCB/1gYszPksec3mw+Yia5Tgl5b+Jiqpqr6gQgSZJQlqXVzsR5ngOYc25NkiRHDgwMUJYlu3btIoRAWZa95LgPFvHb89keItiTUI1XrzXn1/9UNcf1mwuc+2t9v++XJPYkhtNA2mg0skajkSUimSNklJ0slSJNXZESOqk46yWUqHSKDaKOPzBXzaG+R32/2l3uF+M3ysTu7Wzc+J69jCEHPQPqPMknnX4xq458FEGlMAse9ErQO51zdefs2WEeeE71ORWf0O7mtT5AnHOrgN834V6fJp8Tw6oYG0fsaGH+Nlk9Sk93ZlTsuJOYTNKTP4j7qus74OAzPO83kqQfvyjGgNg8Wj63jc25CI0Sd8cCmK3ElwIoQghFWZZFnufVey3MpKjiKwuiHWicONnSyjpc61kccwvhBOCog3xY9s0MLA5Xad8Mqj52ViV/yKvNT5IksSRJyLIsFj9SpSzLwbIsjy3LkqKI+2YIoUdo65yBDxYqHdwB4IDG/8eB/qLx9SZbP1G9ET+qar8QiVEmxrEV97e/p/8G0SCWd7vdvNvt5mY2d6gUppJXKrU8VjcBojp7G720pfO8DPoZpAT4FUTJEiEU0zjN96qodf/qAvu4I2uykpWHHU13ZpdrJOkucP/ovX9zURSushD2a18DkZA9XlW/4pwT55xVOpuCmK7nSGDj6OjoV5YNjwwSKb1Vf69Z6gU7trIUTdUfncVkkm7+bwA7sLJiDxiHdFKvJg58P9Hr3xD6daMnUvnlmVnopzn90Rs966j11Ag5e+tYjfkTP4oZMaPMHQf7ELXSfsHvqkSme2JPIhVCfKQkiRnC2+22pGlKWZZGfGatRPUhMzs8ZuyOv62fuX491Jbanq7goYd+de1exkXimNeW2H6asabvfQE8gjnH/P2tsl8GBr332UJfLjI208SMSjVz1H+f2h+1lpKOBapEYwGh3Gv+HTQBTLyjCLEoyZNPfxHLgM99/AVhfHKcEMInUuefV5blEc653Hvvor8gwUVd3koVzgO+LGaucu1Q51xDVZ8DlGJcvWLZclPVWgQTovK/TnYAe6yjuEjMgNmqclqPUCZ9JEPEKp+wH6eMcr8I40rmh/vVD9H/MAb8HDGGORANSdMWncUXmExVaJi4qNKPmb2Xs0e4UnWPhDlCmBEJYMKcb9YhwZ6ZewXpy+PX93cRcy4hBKPRaNTlJan0fwDOzBoiMlw7QfeHnIUQSJLkJ0j/9+ND3+62lxF5j88LEcBle1xukJjya7FdRarrfIQosfT8sfa1GS0wB4ara/QMrlYZAqtf1m3sEWjnhYViqe8XB6hAkjYpi458/qrLhPY2nJ91jYbcpkV5ZVmWz6v8sFTiwq3z9mXAk4Djzewu55xUIthvAI83s22CXC4idcaP6tkWrJi4EGaAGDmz97r5MWDPMLD7jYz5HvX7ir7Yxlx1w+jOEl2DFsDcqSKCxZDCO5nPtVcuBr3Np14E9QNNsnjCzwPGQpN/T71gDH4TRKTsdrtlLHAVw83SNLUQgnjvRUQIIaiZuVokbjQatNuRVh9gDPMCO1W/m1KFmqs1m9uRfjQixiGHs3lrps4sVNOIfiJYq7lqd5SaG+uP2FoINXfWr7vria0LEsC9/xaq+/bbGmpimDBHaxKL8xklQfwAJMv2GtSDJoBlzIZPXnRIwdaef5Fct/4dUo7vMCmDWQifyLLs2SEEdc4J1vM/DEDi0F8iprn6q8pxuQk8FzUE/smwsRBC3alSWYDqTrL9RB80ojNYzGcRUw31UQ0RQo9f2h9R6u+qhX6rc9ex+vEO5Fr3C9PEfmozX0zt7wsFvlmW5e9Wls5qc3ELeqP0++btfal58C4mMLBKzWBAp8ql94CJX31B3Yv/i3+bq+sA/ePgXNSw9fv21S4vtfhkZpRl2SsBWZZlbQWWOvvKIiJwdP1wghiWl2WPY0xECBbwVDWGe4Wj5lQuSZJg5f2JBf7xoPZpFYs0p6KFFvccgX1OENvzQ5M5grgv7BLjCcDdVVj1vrHwXlLtOSZaxYSbGd57aXc6NBqNKoxQ8amnsITB5Y/gxLUvq1bi3Hq8fzrA+e0zfCYmnqLoSuaT/0iSZGMI4akiMhvbaXW2kjpd09OJaaemRORY4JkiMioinwbw3mttqau6YKx63899LISaU/FVB81vqy1ICxbAT5xSeow5dr9fDbAnAZxI03S26m8zRMMCzLP1/psjhAvBoSaUKOYQMRXBLDOB4K3LoSKCcP+4plr0rYlfkiTzPvcTw6KI9XOdc4QQfE0493PvdnSjgayR0C3yKlA57yWmq7tvT+1SCAGp2vAzhF3EuXo4i9MWJW7qGG4aehWDD+pm5kDEI6Z4CoqioNEaoVTDJ54yBAIJw6uPZe35r2JW2Su/zgMmgCG6B1owlVbmCcG63smnROR8KoIkIt7MIusbLXi/iOhvAdeJ8VxiAtMriWnpYY6d9WbWrSJCADKTnlg21xFzEzjZS2m+x9x2Euvd2jxXRbe3H1q0DnB/LJcRh5SI3k0s0biCnijiZO49VO+nvfdW1nmVXKZHHP0owh40ak+it6/axd4KRu+7DWeF5nmOS1ssW3UcgHQm78HyaRPzmP34NgznHEURa9vWrjC1o3MdTZHnMeql3lTNLKmJ42KXhqg3DiGqopvNJt5B04MUUQa7ZtMHOf3MlzBdDUOo2pSmKWU4ZOrRHwn6/TLvJ7YTPTF+kf0vHDUcaWOAoWWrSBrLom0h2F6bxuJctCORnMmdd+CcZ2DF0WSt5UA01HbUsfb8C2lrXeFwPh4QAVRqZ7EBW3PE0TI7tpUsdaKqX3DO3WBmp4hIm6iQTyzmn0uAVSJykpn9m5o9ubrcxyuTtwshZGYWHTDjs//HATRH6FOoHjgeEorwHxAVxiuqzwuJGB56Ma4CcPhRx8iTznr13s6TfVhowteKmhTY8OkLmRzbSZIkDA0v5+wL3kQC9oXNb2Lr3d8/JBWPF/YBPDDUVt5Wq9Vzc6ktyrWxI+oKC1zMp0WSJD2ucBFDiAN6nKJzYJrjq7DXL275GIRxujN3c+36d3DSOa/t9ZuTQKczS/YTZGTZn1XiEPkuFkS924FcLQVhcGQFZ57/jkoNMj+l1P4uIlSF1oH1n3kZXoyzL3hLz2m1JBYL6lpN/PYejwc0QgFQDyeufYGdc97bbWh4OXmeJ2i5S0S+CHXYRU+B75grlPMbRL/AR5rZLWZ2XWyQqo/s3SxQpzv6JnMuLvGysiDnsqr+HioO4IE84KLYP8t+iKa/EGtR3DH/vvP8H2sMV8yfAqHURLug7UWODmgO2q3ed2NsrjrQ6za9TcfGRlVEtCxLnZ6e1muufq9mKVY5nhssLkY/2KiNHO12u8fhFUWBqtaxzhRFwcDAQM8VRlUjR7s4gUoADZUIoQrOOgw5uPHKd7D9rm+y4+7vMr7zXsa238oXrnwDX91yScwOnE/RaKSL9sv984rsx4GJjP3m3AXMTPs9v98H6gAgxPR1iynEIdKspI4TD0DhoOtipNnsAR5dYq6/zevfxNT0BLt27eSaq17J9Ve/udf2whbm/Or+f4Br1FGElBK4YuNHyAbXgCQWQhiQWG/jf4FGFTGg9FefMnucmb0SWO29/1szK32SseqIE1ix5gSVZFBKS6q8l2wlduz+cGz/Pbqd2UhxpTJVHeBIyoJdduA4eG3GAeFzLMyx15TQgDWqWmfJIaj2wjhiBpCEnIRij6Nb/b2etQ7YeOXbufuHt0btjHNRn0agyKcJBYiY1QTmQLGPTesBcYAi0nNpqY0htchUFAV5npOmKUVR9OpuiEg3SZL9pVuOYSdmqMbEwNu33cvn/uXFTO66jbKzG2c5qQdPwdh932ds+/e4/BMvZXJsB8LiBel/JOhFpR66K+7nsyMm4+3s5zqDwAAYu3btYOPGd7Bh08eog31KPOYyAp5iwWOuXPyWTR9gYnw0qj487Nh+D2O77mHzlW/imo0fqxbHvlfk/V6n/TuDAqete6GesvY1DK9YHQoNBOyOgG1mLgqknnDx1dwKzK0xs7GiKK42C37FqiM45bx3cvJ5bw/L1vy8rD7yEYnGaniY2T8dQLOOJeoTDWB6cpQvX/dhawICUq++xeZlbGwXOUi91oM82YWYDXd7lV+l/7v+7DjHeu+Hq/eMj97HF6/7GJkDJxpdSBC8T0iSFBFH4hMEIfEJKdHK8oUN72Jq7C5GBlN8dCnBJ0KRzzI5ejdXfPZidu3cXhfFPkDKNd+nWmO2oH0/8H76c978i5Ef8xyp+wlh5SbT0wuaWVtVx/fTYA8c7r1HBcwJRdFlamoU04KBZoaZ/YapnN/tFJmJk9mZDtOTuwllZzARcW4Bj4UfFee3wG33/otbWELaz2a00Cn9/qm3M1dje18YAE5wKI0Mdm3/IVZOQ6VeEC8UGsBFH1Xd4zCs1wvrznopreYAgsdUKILS6c4ytu0HNP1MXxzfnleJxwNkVBSLmQHJDS7f+PeoOdLU52qlAJ81s11m5hfo1AJInHOfEZHbzIzxqRmu3vyPqMedcs5Fsu68NwWfDfgQV8rniRWuBHq6rj2LzhxGX1Wr9uw0FmbFM5fOSPA9NiSW8StpUMogBS1g05VvZcd9d4E8uKFS+8C+dlghKpc/vo/f1I93RJqmw1UkhGAqiXWltgP3XB3qk8RwWpBRkIQOKfCFTZe6yV23QzGLhhxAkiS5qCzLC5/0hCfww9tvkdGd97qiyOv+6d8HDwi2Rx6xWm+3V2ccQPcXRYH3nizL5iU36Hu1NE1pt9s963AVeTSxyGWrPnXHaRC8eVISUhypE1If75Mkye8B53jv1VTSKI4HrCxn8jzXys3rx+0HI3Par/vFDfbvNQvNvfq7fr3MXx/AdR8NoEUH0ZxMCjJP5KhFEAzTKsOqOBKUBKWB0iK6kty4+cNcdcXbmBgfo4xz9Une+8ucc6uSJCRFd6xiaHSfg+D69+WDOfqhOEpg3bnPtebQIEoIZQgizr6twlepEnRWs0FqSchFZfUnnMPEmTVag5y49tkyEZBcsM9t/BgrVh+DT1pi4gvv/euZc6LsF2HqZh0L/Gq1mHzl4CtqlT+h87HQqzgcnqbAIMgI8JWNl/KVDW9kdtcPTULeTKBMDsCFYY6YCA4hraKt+8VDixttUb2fd+zxDDBfZVOlA+xZfC8z4Qcm+D04gfpKgyGEUwATETEzuu0Ooog3xIGk4kVDECsVpwVigSYwBPKlDZf43ffe6r0W3kLwIeZ8PElV3yDO/f6//ftXWyec8DCSxGNmYipSVU8Ti9m/qds1t/Lncs/1GiuCSxxqgdSDhrB3bjub64z514rcWA2fZNFZJ0S+QE1AfP0+iHgLwZz3KWWpddKEOmsO9PTubs/DY/Kkhx3/aCeWNjIS74NIPtsmFCVF0V2lwq84575dxyKbmdTiuHcOF3cikXnPsCf2uu9+joOFOgu6x5p1C34yszgv6zP7GlwtsNoR1Kr30tc2ieTEKbgvAZ+oHrnDPJKhVGrmc8QUUfGpQKY5EnPRoaWR4In16hyJRT+GFWkMPfnKhsv44oa3MnnftxnfdQdIF+fkSPP2RhP/EuDhQbHRndu4ZsOli0ZRHBJVVWQmPZ0SiiAEdXFHjrrKvwLMybz9PBDTb39FRL4HOO+9tQYHRMGVYF2Dk896vpx2zutsxcrDnXNe8zzfRKyDmzjnOsz1fm1oyczsKVSe6iJmRWfKGgJNkKaVrmnBDbogAwQZELj2ivfKTevfZhP3fYfpXXe0vLadt6Bm1gKOO5h+qC2LQO+1Qsp+chmyd4aXakL11pAjGkPeypxRqWSPdWVmF1RvncM4/9xXc+PGj9AEBijIrEOLggZdaYKszJAbNnxQblj/1mRq9A71kpsWhTSS1Ina8ar6djMbMLNLDdeOAQ9xhwmxrMSivkK1ZRYi4XJJL3NP1NmFegDnnJ6pPh8oak695vD6UFbtC1DVWI7c4gxwU5XSK6n6fk+9lQCPu+uHd/6a4Wa7WFYmYmmjAU4GJPGrgUep8GWbBzDDq/W843/kYkTvASzOoDTz4gUnGImb29RN4y4c9eN7+My6fQ6p7PG+P5OQMRf59R6iW8wA8/XUtS3gV4GjnXNZmedu986tXL/+HSRAg5KMghaBYUpGvDEIbLniI1x71duY2nUbO+/+LgmzTqQLUqbi7A3AyUa4rFPkXx8YGAg4R5Iu7qb6gP0Aa5iAGVZais8GxUJuZZlL4tIbiQaM32F+6EoCfDqEsF3E0iyRInFeoruBUIiRerQokaQxkhgJ3vsukQD8MuZ+O15K63CdRnXdU4G3ALm3IMX0Drtp45tMXUIZYryoBXVJkhCKLuM7v2ftsi1CoF2G7sqVq9PR0dGQJMmfFkXxGuf23UW18r4XeVD3BXHhWxWGIkaxL1+7/ssxR0w8kBjSFd8KQ0MDMj210zmsm2SNf+60899B+AtgSmLweX+2798wsxOBm4TC1n/m5djMD7npqjdJ4ps9N5Cq75yGroyN3lIWnZlCnIkzCyJiIYSfd859SE1/M4RwSZqmn2l3u5Jlw37ZsmU6OzOGll1EJBWpC+ZUhK7qj/7YW4hiabfbxqeOTt7FrCARaHjolntTCqv+LYSaO9mP+0aDuNg8aBkJpEkVRfIFoASXUyXM7uv/qGcVl5bl7MtC6p6RHr58ZsfObTKCsww3K5K8BLg38cnXu7NtQ9QGB0bwaYtut+uK7kxhpkma7Lfw4oMNi/MUQJ1FP9zqm7m9q+b+6vcxraeB9Xp4HhPb91B1+YW63+pN+b+BNwHvJ/ZtLbnFIAVhGHiBwGstFJmGjo1uvzW/ef2bLG00QeO6CqZ4l9KenWZqx/9K3p12aYI0mw0QRVUScG8Fez5ws3PuPUnidGZmitVH/RxPWHthL6/bQjhkxkqralyefvarGV71CBteeaQMDA3Xrj1/V/2s5lwawC0issV770R8CDQINCQoiHgTl1KUiIIVmuZmos65AWK865+GEG6trpUzlzRBgV8WkT8BghNr7bj3zsZdt/+P3/bD/2HbHd9k193ftrFtt+iuu/7HxrfdalJOOixPY3okSXbv3p2JyJtCCO+rUnsdBDTWoYN+F4ua82stfM78boReYawOYKtWHya/+3vvs6OOOV590pROO0dEXgpcZ2bLq9/PMDcnh4ELAYcpk2PbmNx9D+PbbrWxbd9mbNu32XrHfzG69dtsv+u/ddfW7wfNJ7wXTZ3ZAFF18Fjn3F+r6inA33rvLw0hSJY2Wb7ycDv/GZfZYWuO8uLTmvOeZQEOt9bt1dZZmAtde+Yzn8muXVu5YdP7I/XxIHsJaopQ9qxonoKDKA6OiHSrWPNBoBcpUm0AXwMuZ45D6R+DqiHqk1TOc97eOj45liTNRuoS38DJOWb2HDP5a1UtzAnee2s2m/L7f/AhGRkZKdI0TSpL84+NA6xg3dkZa6WYB6t08xWiDryVQKc7Pf+kA9N/10Sxjhuur137qf41kROsGZ46u3Tdxxeo6sOyLOt4saTsTg9sv/s7svX2b8h9d37Dbb/7W+y65ztsv+u/ZXLnD8XyCZf4aJIKWvgQQmJml5rZK83sByLyZ2WZjyZJYqVBSYoki7Phh9Rbo1vGYNXTzn8NZ59/iabZkANxAlcRS1zWnYCIbDSzH6iqBvG6bM0JnHrWKyRUbbW6PiLQKZyomVko28AA5r6nqk8nOggPMBdrXKfufgnwKKBcvXo1zbSZJZI0m2kz8XgRFcBFNVYsECLVQv0tEbkceJ2ZjJrJxoN5frFA3pnCA3knlrIE8ip6xc3/7V5K/i5xArUAMSFRwQx1AeTUtW+3weGVIuJAtOu9f4aZ3VyJ6i0iEawjaM4mEkEveOckcSLi4nN6ydKmmIp4l4rgm1U7SyLx+1Ngi6r+joh8xsxekCTJOFp6770bGF6JS/AqGcuWrxLF1YR9wWS1NcHpxdEmCffccw9f+9rXCN0pdm/7FtdteDsNgczPz8QgzGVrvebKtzK67Va8m08AF1uoZpaJmAOdBiTPc+oDXAfcJ6ufLrTRmZn5EIpUNLx6oNQPDnTLU7WTv0jL8MksaXxjeHD4H0XEp5lHA8zOzvC5T7/EZqfH6XTaPwkGEES8zU6N23UbPmxNIhEEwKKetglcu/4jFO0Z4pbj0Fqbt0DXLvBQFfOhVnF/ad/fG6BvAH1X5WLaNMFZlIoSMR4OfBBoqWruvW+b80lAstIcpTlXqvPBJAuQ9qq+qBYaeJypfM5UXoK574jIM83sB2mamiokyRBqKd3FogA4xATQcBQ4OiVs2PJhpjtlFUYqU8A/EedzALZFAhjUORBSXLZCZgOmVf9aVDZZAFt7/ks59mG/4NLWsGKuDQyJyHfN7GnElNx1XQBfXf/RwF+LyAmhtNJUZk2lYypqKomppKbiTcWJSNM59xQReb+ZXaGqTzazu0TkGSLyD/t75vnWS2VqYhdXfuZiJiYmqFQstby5UF/3T7FeuiuTOk7P/OjOHWHz+jdy1RWvZ3T3hJoT571vhBCmgWeq6t+o6jRzHGYt17wLeEW32x3IskyPO+44BVRDjzPr2bREZBg4XUT+0cw+YmaHi8j7gT+qrGssX3WErTn8GM5Ye5FccfnbrCi7dsEFl/W6gZhKay/UaahqcTjPcx7+8IdHlxQUwiwJM1yz8QO4QF1Lt9dhKXDDxg8xPb4VLdtYCKRpShX8vj93GSWGU2aApGlDVq5aQ5I265OuJNauhTnOpAcR8S5JVUQsDTynYe6qVpK9I3W+E/LiZdPT065SddSZqZkYH6XI22RZVqtl+sf/x0IUu51pXLm71gXEfhclk6rkYhgj787Uz3ywl69r0TSY08XX0li9qb+eWM97gvm2rrqC3D8Da5xzSUJSOklyJ4kJ3oh5DgogDA0Nmaqelqbp+0VkQ1EUa4ui2FQUxTNV9RuqpXW7XZzPWHPsL3DaOa/ZL/t9CAjgnLNlrQdT4LQzXsSaNcdh0tuyLyfGtCbA9aDfMjNJvcclKd3SSxwW6jKupsQaviXYiadfZK3ho1ywxAMzA62GObFvmfAMEy4Gdxe4OkXOrJk92cw+gYUXOrGfc2INJ9ZyYsuc2PFO7HQn9jwR+Sxwuaq+OIqU7qMi/mTgq2Z2+EF1hSllPs3k+A66eafu+9paPQULcn51/6RAMOkp48WhQa3rt953p01MjKWDw0PSyjIt825phLLRaGxz3r9MzS5W1VsqbqhLVAsI8OZmo/H/ijx/+l133nO8qYyIyLCqDprZw4Enm+qrNYRPAZ/sdDpPBf5TRJ4+Ozt7sTgrW1kaRpYv1/Oe8QEtpKlb1r8pjG//gU7svk8/8+kXBYfmlQ5wtJ4D8x6uysRSx3fWIWoqIC5hZMURrD3zHRDGI6Uwelmgaw17JlPRXcdHR+avfe1r0Ty0n7ouIjKrWGZCDrSGR5bJs/7gowyNrCYaxUmIG8XH6XEuavTixF01Pq5d8USAy8TcSxH9916xHnMOUUPUqnrOw4i2EU0MfJ8F9X4QP93PsdjvI7wzxnbewY2b30FWPWjdsBs3vYvx0TvAShRX84AH0y4D1coboGk9u4omff0oRF3gU8XYIka7shp7MQoxzhXjCof8qTj7RS827BHvkTR17oTUuScnIi/ozMxc7r3/SFmWLwYG0zS9NE3T56Vp+l3nXHDOmRdl+aojeeLpF9Nh/yEph8wIAnPK72BQCnSshZGaEZxgtxNN468C/l1EdgOt6Ty0jzj2WHnK2S+Sbh3bFQ0LJsTK0jlqHbAyXU0hO0qk45NmM3TKqdShXeADwBZi0fQ/pioMbWaPA34BeDnRj67WUwwDK0VkZVy8YsCVIvJ3zrnrQwi/kGXZ88zscXVegcUeG/hdYmjfl5zwnei/pBDFw9Oq9izkHd/vVVRnZP414A+rHHz/mybyb7kay5cvL889/+1s3viXtO/bGjR0me12s1aWtZ1zf1sWxTVm9mLn3DNFpE5Z74ni8BOI0TTj1AkkzQaBo5xzw8S1cEej0Xg78Dkzu3NgYCANJqUkLafJCi7f8D7OPOdlbPr8K4EOoYSJyS4eeRywTEQWygNXG1Scc65UVWdma7z3v6kwrMLM7t27/3XD+leye+fd3LjlEh5/xqtwoj2l7nVXX8ru+26hyNuSOJ7YaDRXPvaxj01E5DCgqIh+v3Gt//VXRGTWzI5AZMPu3aOdz372YkbHdqORzCrYOOhzwU0Bz+sbj1oS8V7ciMU49kkxXgZ8XIxY9hUvsSoc1uf4vAw4y8wmpPJ3Y474CezFmGTA/1ed1yA6Ek9W3x1PnMP3Eaut1SH4dZLa2kMA4ubXAH4eeKKZZQjfSJ3s7hYzjO64kxs2f5SnrH0BJnDthg8ytvOW1LozwcUCp4cT83VOEOfzgeAUYu2eXcBXq/akJq5bqVYaQFfQBjFK5HvEdHi/V51b++3+OlF/fxcwC5ITx7FJDHE9nDnO8UPAxxH9JmDRBcubSZM1Rz2Ctg5H4ud8FHkWwSFnx0WiOdhVLf/y+nfTHrsrac+MlU54ivf+vWbhvMRxt88GbOiI45ksBjhx3cslJ9qdgMoTMvqAuMplLgP5wuYPmQ/jnH/OG1h/xUVudnyCfLatRpyswNEi8jvAucATiZNqAOn1hK8chceBWzD3eZAbwd0C5GahFOH9TuRFZpZzYMaLEijN7NXA30uVBgx4hIhtIuojIRK5rO+cWvfUYW4i1N8lwN8p9ufmU7JsmOFVR8spZ73GNm74AIlNMD22Fe3MOiH0R4OMEInoBUSL+GrmsjcXzIksALcRJ+WXKt+te6KuJg5lQZORo39RTll3kRhw3cYPE2ZvY3bsXlzVdGfuWhF5CtEQMrQHd9sBV2eO6tezTQFDQfiyT92TipBTmpIOHs7g6sfxlNOfTdfiyvnq+rcwu+vWFWWpE2Z2Ey75TVUtE0cWQqjHci/UVmKPjKrqqrSZ/kVZ6t8HVTW8pI1BNzI0wPTYzqaYzuzePe6WL19+agjhBZVKpFWH0YlIhxiKeJmZfTuK3+J8mrnG0Eo6nQ7dzlTQUIj33oA/cMaH+/p9n6jq3uxZ2OfJwL/G/uVZwD8Q00cNEOdJ75n3FW9cW3RF7I8k8V/My2JXkIGZkcN+jrXnvgrxcP3Gy2T8nv/1rpgG5xVYB3wYOFKMpCpZsej1iaVwE9B/d2nyTFW9owzWbDQGukPDKwDIO23rzIyLmFYMl3PVszwS+AMi8f9F5pJ9UPVDnQ/0XmK972tE5Foz+158dvWgopKF5WsebupGOGXdRaiL9aRrNmQxOeFB1Uc0iE+0+XOvZ2L0nsy0GOx2u4/23v/XMcceV2o63HrCWW9shwymiigmYJhzDiV624tRpznHYzSJK+naze/FhTbjW+/Ga2nOaa/QjREEDGccLiLLVViD6BHExb/bzO4y2AZu6pRn/mF53b98UpMk896LmeaiRfHzEov/HEg+I6n8yXLgNtC7+/4uwNP2c35tIKl371qf2TLh6yr6bSNlzVGP4sSz3tBLt9sArln/Tsa2/RBnPU2vR0pxMRmkiLGGOf3cGuJmEIi79b2qOmpmXcMVJhnxMarY36RBY+QITnvaGyUkUJTRUnv9+rcyM/pDyk4b0xIRf5ozlld9NQh0q9KdWbzX3lqWekKqQNpIPj24bDnTnZzhVcfzlDNeTeFBRUhK4183vovJ7d+Xouw64LdN5QRgMnHRSiExe/heqAlDCCEREVXCv/sk22qS+OGR1V3JhpOzz35jseny17mp8Z1qoUSs9N28nTXS7IiyLB/uvV8pItvN7Admti0owSWNVCT1SZaWhx91vD7ptFexaeN7pOhM6OzULrNyBkGPErVTKq5xMb2aVoWuamm/dim5lqoqmzOOBp5CXMttIrcl1TzRxQigiIDnKyZsLwwtrKVrjv0/nHrGi8TAXbfxgzax9TuaaYcy5HjvDxeR31bVQTHGkiQZ2ZcE1OcyUySNbKTbbd+p2H+K2HTSGGHV4Y/k9DNf41Thus3vsYldW21oIGVqcpJQ5A4pXchzaTbSgkgMR8zscDM7qnofgNmqfOaEiZ8BCVaHh0jixTvUCcvXHBdOOfONlBIzv+Ci3jkcgDfpg0oAM6KsedPV7/Jb7/rfkLoCMxs6/Ijj7Izz39353FXvCyed9zJCFheYmuB99B8zBUSQ6LoXxWsML1FRbgFSg02fvYRVwylaTDM9uZssSZmaHpcydKQKVjUTVPZgTWJpEI/S4OijjieYsmP7vZC3SZxJLc7vD0IvLA/noL5PCIEsa87loDu4nq7dMFBR0tZq0uGHs/b8i2jrnGZlwMP16z+M5jFRjveGlTPMTI5KWcw6h1JX6NrXTj4w0GSmG1i++gRUmqSpx0iY6cDap15I4ZDcoqanZmeuv/qt7Nr6PTKvaDnvwk2iKDjnerVA5u1eNmoRhpav4Pzf+xCfu+rdrD33lRQSi8uqQcvDQIAtV7yJ8Z0/xEJnXhLTNE1j8OgC6PkJOihCzP6cB8fqIx7BGef8JQWwZdPfcPZZf86WDe9nwHfSe++8pRAKEkcqYqVzzpVliZlpmReSNpex8vAThGSE6bZy/tNfzkyl/vagX9j4PiZ2fBcrJs371Ico+5uZLeqvGOfZAs+xsI6zNiRWX7p9zS2JUeNBDGcqGWuO+yV70hkXk2s8eSBBvnDlOxm77/tgJT4xC3lBdE2LASxibuFiVbWeXtRKDZV7E2aUNrD8ONY+7TLpRsWneJCrL/+Y/O5Tn29bNr5frZxBtM30xC4J3RkLGoOk+vujjtsGxactgnoGB4fJ81yGR5YhyRCFpEx3jbMveIV1dG9v63kX3Vff7+f7B4QEpAV286a/InR2MD22Vcpi1g2OHBayZQ/n1HUvdFNgwRHDJqu1FHXgle+Yxq6eC2yfq+rWcNE2Xtfou+naj3DaaS9ky4Z3sHXrbWSJoqHK7NLnP2YqBHEYDY49/hc58fRXIMCmDe9masftaHcK5wRB90u4XNWFRVHgGy3WHHF8zxazfevdOO2A7FePuCCUBJ81bfmRj+ZJp1/cK9hrJAhGQoh5hQAvMfmrB65Z/zZGd9xFwxtWdBHKnsN23WrDReesLGX1modzyro57rKeRCWRrTVJUIzUBdIA12/+CA2ZkokdP5SyPSVCz7es1inXC1QXs7MpqaXL1jC04niecvqLLZf6xHi5xIwMuH7D+5na9X1cmCJxQpF3erG/+yOAqiWKkKQNghti2Zqf5+QzX9oTj2pLSBO46rNvkIldd7pGJoSyYzF7tOGTBmWhctgRJ3Da+W8hr2ZqACsRC1gv1fmXN1+Sje+4VYvurJkFc84tSvxCZdVWVZPEW1kqPmkwMnIYu8d2SWJdJ5R1nG3t8B6HyJwuMj9NxWFOTBrDDAwfxdrz38CsYnXOvRgdBFuufCtTY3eLsw6C4kwtOo3j9lWCor5voYWZYFmjZRL9RKXLcp5y1iso8Yg6oKhdNFzN6npg81Vv1bFd9+C0NKREzConnGrvNEMFfNK0tLGSC551GZs2XMppZ18sCpQgReUpsqev308EARSgGX1+aDnkmg0fSaZ23+4bA8vK0y94Y8jBColGtH6YGc6BBptbDcw5F6tqT/PbXyqtTuJ545a/xofdjG6/nSiSlPMqgylC0hhhaPnRdFnOmee/hKKMC+HLm97Dzrv/l8yXWCjiTFukl8yqUC8xVh7xaJ589tt6Ms2NGz/A2NZv4dhHXaL9QGmx+tjH2WnnvJSpvPYviDQmho4prq+DvMRN4ZqNf0PIJ8hoM7b9NqyY6aWNqiY2WWs5reEVkAxBYyVPOv0F84KrlfgQWrkjA1Xq8bjYB1O4dv372L31v0mYrU/rV8hXzdx35xUyaCuO+RWefPqLKWRuEktdC1iVzIFXuGnDO5kZu4OyM4EXehlgMr+IHU8Mc4bzGSpNhlc/khPPfl2PPXUCIjF6NQGuWf8BWn6K3TvukLI76bIsnnfYYceCb1lbW5xy1kusmNuqe2kGrNqMBoAvbH47u7Z+P0soyrqM556oF6a56JIkDsqgZNkIK9acwElnvJaNG97DxLZvW1//wp4+iyaL6AGdBWnaisMfxYnrXkspWGHgfCKqWo0nlgE3b3oXu7fdgmhXEh9FBi1KnCwSCyCGJIKKJ0mHpDlyDCed/caetzMuRdSsVknVjXeRx5ENn/8AI40gni5aTFtnZreV+QyihdVO9N2QkzZGaK04QUpZJmec82K62rMe1hawnj3+wN3kq0c4yN8fJFyl/VaqoEt305a/ktPOeJ61wXI84qPbi2p8DFcRKe+FUOo8Agh9ERYqzNVNj1YTR0kmUdzIgBu2vBdPl1BlLqkzAps4JGlx6tqLyV0UuUJ1Tgu4YcOleCtIHATZt6IZootHCAEjUDDCiWdfRLfixDLgxo2XkRwkAayl9VJanHn+xTZdET/nMkKtAqmsRP0D7gg9FiGN/c0Nmy/BWzEXe2sW4/xpsu6clzNbxufvAgHfi8mNDHm1zCuRJC6aeJ9EKp3ghveQWO/5FlgtvXwbMH9DllJaPHntK2IJO8EWZjYcqQQGDK7beCmenMRFjjtx0Q9wMR4zEEjSFu1cOOWsV9FmftZhweMlxJhZif127cZL0WKGRqMhnUI47/xX0ynpVZDXKrxeqw0ocQmhctpqANdv/DC+HPeDTR/Kstwrq029J0THTCVYLNZkzqOacdqZryR4KALcvPESEtp1x9S+hL1LRSLgFuxfxdEpjLMveAMzYe65Bem3RFsmRsPgxi2X4qxAqvni67W2rwJiEtuuJJSlkzPOfQOzYOriotY+clTFeUuVsqLntJtVz5MJcvVV75JmqmgZM/wELcgaDWY6xtrzXkdXI8OU69zz9rnszHMHOFA8iASwIkxRj4cjIMylpQpgQWKSTfrCpepo8r6h3KuNc+mT3DzRTqiSn4rSHzCw5/DVJrfa/Nbv91CLlPVNF7Mi7alrMOIiqf2pJF7roF1L6/ZWOg2LbZjjNvZqR23xM4XKAiE23/N2f88QkFgj2PqfvK/z6z5XQyROYmyvFbnnAl0MWve/Sr2bz50a61NUW5xQb6D0V/lrptAtDuyGtX5oLtVtfx2Y2G916diePO+hrCZL3U/x1fU97NzdLW5AruJwXCXR7zVqe4pne37um1fWNxf3J80thJ63e/Tylh5LLrUyKaaeskTivZyD0BeXvT9HYd3jfVQtuAUb26vTYhqNdLES5F5p2iBOt/ptqLReVf+b9rQAwAH2S/8a78ePhADu454GLJwU0youJBK2fbaxJoJzp9U8hMOJq4a4X/fVj+q+fTrFevW6vuXdT+QWwvwr7/3Lfblp7AsL5MBbdID3a1xZrPynaO9+uteUn08A576tdbHSO6+vfxdozUL37+MMZO/BsT5ecO7L+dcRIE3SmAl4gTvsea9KaTavXTWnu+e9Y7uiyqAsFo+l8gje+ZjAM97DuarZLqq89mmL7J8t+0iNxv4X+n5IlO3lB1dn2xNBrErVVlvJzLlkntFj/5N3zzlfqwT2jZqB6Usm0rvN/mKQ59qj+7vNPPwYCGDfTeanPF+QIelZeg8iPXo/bbEFKcGBM8QLd8T+B3PfOFhm/MCwP8Kwr9//ZOHA+6a3Be5zENxBPWOtOui97zt5oXm3v2tLxafO1S+2/tYuevoBzqv7N/32j7qd80TqB+leDxb2mhl7dviP1Qjyo8V8zuVgsTdh+fG0Y3+4/wRwX+05pOHgi+D+9ceBEMCFcKAT+4EvkPnP9VCjID9tOFgCeEhD4X68eGAE59BN3AeH8NX4mVxgP1EPvfD4/kQ18WcYBzsOP6rtfwlLWMISfuLwU8QBLqEfD3XR94HigJRwB4TF27/E+T20scQBLmEJS/iZxRIH+JDFz/re1ff8ldPYgXoPLGEJNZYI4E8hKg83QHsC3IHYpueC3uZ+Xzu2Ln4/ReaycVdiYXRW7ffUXMzSvlDsZp0TEJA6lXt0XN+f5Vudr06fa0u8Yn/o5L7IpdY+qpX9+ccjxC/hR4ElAvhThuhNb3gSlLznXt/vb259vnO1/5pUMb51KF2dbbN00F2EAigxtX1W3SZAw6ATKpKW9V1zX0S4jgipExTMRVrUadDmCk3EkL2+SINeJbrQC9dLQBpV1FEOlBUxrsMTezXx9vFMFp+jLjIj/ekMdI+zDp371BJ+HPgp8gP8WcO+/d/SiiA5IAhuy5a/10ThtLXPjbUJHZhzlGUkgL6KIa7Dza7b8CG85DRbQ/z2yX8RCzLQHxboSH2Khm7vPjdd+zHy9qyzdFhPP/PPe6m3M+Daqz9M4gpclW6hLOr0YTE0Ki+NdeddzJXr/5a15/zZPBIjDq7Z9Nek5YyEkNrJ576YNjEeN0lSilCCBUQ0xvMCDZDrr36/OLyetO7FPU4yFbhm/QfJknyvCKW6jGcIAZ8MyElnvJgNG/+J087647raU+QEq6iPPWsYLxHAhyaWCOBDDvsT/xwtSv716g9CsQNJE7dz+46kaHfyo44+lq5vctp5r2HaIEiC05hWaxC4ZsO7GGnBXXfeTrc9w+DwMpavWE3phznprIsJFTdoODyOAVfypQ0fwBe7uffeu1OVpBhaucY3h5aFdesuZsuWy+i0x5iZHCXvtEm9J3G+VzPZe0+e5zSbTYaGlzHb7bJi+WEgKSef+Sq2XP0enOVsvfsHWdNJvnLNw3jyU19PDnQkIZhUHG5MgtEwuOnq9+Dy3cnk+GjpnHMrVx0pIjFtfWd2htnpCbqdWAKyTvIAUKpZWZY0s5QjjjyOtevezFVXX2ZnnH0RV2/+K3vy6c+jrALLFAcCatqLLFkigA9NLBHAhxz2TQB9laekCXz5qtczuu37sRpQo0mjJHG+UQ6uOYrdYYDTzn8VecwBQAbcfPWlbL/zG6ReWb1ihMmZDmVZkogSkhEGDnssJ697cS8fIRjDLvDFq96JtLexY9coaWvIZ63h8PTfu5RrrnkX3XyGXTvvQigRWzgvXgiRv6pTleV5Tqs1yMDwaoqiYHpmHK+WpIItO+zYcMZT38nnN/8/Tj7rD2kbiEvRUMTyjlddxnI/zq57b0VV3dDQkM7MzMyrTxy5zrlqcnXFutJizh+P4ZImPmkhLpHlq5azY3QaP3iEnXnexQSH5Vpzw3NhdUsE8KGJn3VT4k8NhCjCNoGbrr6EHffdTdeMZccfk+3M28va3VxnJ6eb6879S5LE4S1WBhtIqhTDnTE8yjHHHMPo+BQEpeh0KQ3QksyVpFS6PBd1cG2FGdfizGd+gDUnPCodnZoemJ2dlU9+8pUUOZxz9ltZs+Jw7r7tTmbGp8m7JTPtLjOdNuaE6fYsK1YfRkDolgF8gs8a5KFkcmKUyekx7tq1jZUnHCM7O7MDU+0JPvvJC8nKu2kKDLhYLL3pYMjBcJJzxrq3csddowjZ0MTYdHNsYsaNjk058Q033e64dl64iakZNzE146ZnO26m3XUznbYry5JGo0HSaFKGnPbsBHk+xT133gbFOPnYrfKlLZeRKFLrNOuUDUvE76GLJQ7wIYd96/4aKF/a8B6mdtyCDzldCiYojmtmjb9Y3nHLvbm/bB2+ZsforLJs1QmsW/cixMH6z15Ke/w2yvaYM+cHzOxSb/6oJHV/HwjrDzviaE5fdylXbfkIJ659IW2LYnCKcvPmD0h34i7rzk79npbFKaKy3owNWXPElg0NMjF6D0L4E+C3DQqVyo4hGkQkFZES2Glmt5vZd8zsTiAXvDcvFF7KgJ2fKmd5YzOh/LxLWrRWHocfPJKnnPYXCPDFqy+hPXEvQ61hpibGj9Fi9s3e2R256t8Cu6p8Kwo8G/gtIt2qk2xT1disVZcTwH8B/wZMSCzNI0EGWHXMY/Upp7+UDlhZ5QRcIoAPXSxZgX/KkEhOKKYBwZuxMhsY1m74IxWO8l4um9i5fYeq0C47bP7s6whaMDN2q8/bU5olqTrnnhZC+CN1lgRsIITwlbFd20e3XPUypibv5tpN/8hT1j6bUNlqszBDZ3an+BDOaKTJ7xd5aKvYhlCMMrp7lzjBebELgLMEzPcouFRJFM0gVv8Ska8AlwLXqZZtK1meWDLW8P7JpvrHWgZNXfL5dmcWHb+XZYmjCVxz9QcZ2/ZdEtqMTU0AHAv6x6p2m8A/qwCidWq984nFuGvDcsyIYj1biVETRfh3LfKXJ43s6yEEXNqVqZ3fdTdf8z79ndNfJuUS8/eQxxIB/CnAXNJZGGqlTHlw4snzEl9aCW5WzWa7oWw6ETJRtDPGVHccXMw/1kh9WhU4f66INBKRWYzfEkmenLc7l+8u7uOwYx7Nk9Y+e15B2sRyvBVgOunMOUc5aZhJrGZqiA9m3FflRfws8BlilTohlnpcAxwFnAU8XkR+GXiu9/5qYNYUUpFRxZy6WCvXq+FCmwYdUiAlx1MgFmufJEkyXZbqxLkZREc83KtR56fEingCfJ5Y6jIjliXNqiMFHkesWftE59wGVX2W9/7mojsraBdfjreajllVZaFiyEt46GCJAP4UQYB2O1byrJNamlkLyCQu7ryOljCTKs1uTDhlWA52CvBbIvJtNftPEfkj5/zpKroBxG+/777OdZs/wJPXvrQyhgCSOsxr4pMslCZlqZn3XjDEO09VJ3fAzMqiKP7Li1sPFCa4LMuSoigcEJzxIeD/EQtzv1OF64GxxIFpOYgZYmRJIqgXvEHmfOXYHN1XnItJ8OOja83OtaGXNL5kzhXwf4BP9XVfUn0P4FT4NeC9+OTxIvJCM/3Grz3u16a+/vWvya7tW/Nr17+fk9ZdGAtCH7ohXMKPGEtGkJ8yeHF4Yk2GudIBeyNJM5yvEvZLLGEsIn8qIokzLk9MLvNKIWq/J+Z+uSy1m3e6YuUMjcr7JPUQyxKI5HnkvhqNBkmSkGWZiAh5p0uZF52iKHDOmYiUIYTEzFKNVLrWw90LvJRIV48AnuhswQzZAIjFoj4LoVcTd4Gv+t6vIBLDQWIto/4C7gr8B/Cu6rePE7Vjv/71r5tziWDOmtmi9c6X8BDBEgF8yKGubrEw9l74e//eEPISRpavRpIkyUNZliH8KnCOc26XBf38rd/57u1ShM+h1vLeXyD4hoilE7vvk2s2fYTExXoZ/enMRYRQlDHORI2805XK/cSlPnEOcUUoBSfaaDR0cHBwz5IstwL/Dgw641ggnWv/nsfiMNlvuYBJIvEN9BtD4sUTZ+CM7zjjPmccBW7IzJyqsuaIo+0Jp/0FXZaUgA91LBHAnwL0F5WpC7HDPrkgAIaGhnja0y9j5cqVpGmKiDwvTVOnqtc552557GMfq977T6iqA55pZj/XyJJyeCC1M9e+kKQO0q3qrkgvJC2+L4pCms0m3nsAyfMcEfGNRiNrNBpJo9HQ3//9j8H8WkBdYmE+qtfFC3I8MMTSbnMw5qLu6o4bAVYCs8B0mjYS5xxFEdRJlKqX4oQf2lgigD/x6I+i3RtC9MtL6lq6CxSBiuLt3HIVjM7sJJ/+lxcwumNHIRYe6R1nF0U3By4zwXe0TErHV03YADwsSZKnZt5b3p5iwxVvYsOVfxcVyFXRnX4CWFSFhFQVM6Pb7ZJlWbTFlkFCUbput5t8+tMvBhgi1hSHaHx4DJEQ3vrA+m2/qN1iai6Q6rWojlXAHxHF5G8CO/I8tyxJZWZqjI1X/q1bfGSW8FDA0vg9hCFoFfdbkFKQAl6q6mQLFfjp4wgbWcrU5ASCIsbzidbY64DvqFAEB8ExjXcbnXNaluWz2u32qtn2NIRZnn7+n9L04Ch7RNfMaDabvXvXsb6NRsOXZSlm1lXVdgihk+d5d+vWrUa0BDvgUcA7iQTn+8AXeHCNdCuIxPew6v0a4NjqOBV4I/AyooX4H4HJNE2tCCqDwys489w/gyU/2oc8lqzADxnsmUtFe5Ef165/H87gvLNfRllOE6y/2Nf8hFhSycudziyVM8uRwOlaqDnnPjQ+vltXrVqVSuI73W6XNE2v6na7f5yk6RPM7AJF/2ZqYtQ2X/U2SZy39vh984wtZVnOCzMzMwkhxBKTZflLInJ+kiSW53nRSLMmkfv7OcxdAJyA6CjwEqKO7qDm50HmAzyRaHVeTuQ4lTmjyK8QReFR4G1Elxn1LhWTTF06IpUmUnRJDfiQxhIBfIhARMACjrn0Uhlw86ZL2Xb3txFgw+cuYnZy7EAu50REq/RRTxORX2w0Gl+dmZm59qijjqLdbkvIA2maJsDONE0vD6q/HUJ4bmOw8am8KCbKzihPveB9XBHFWFRVa0JX+eLV+kjXbDbJ8xzv/R8CfxhC8Ko63mq1lhdhnhPJF4hc4BeZo+D7klKE6FiNt1AV255fMbsPCxGp44Ejq+vUGcAK4p6yG3g/sBH4AZFANsw3GFn9sOKksy5yXdAQ6/5K7Uu0hIcelgjgQwBJkqCl4Qi0HAx4uH79B3DlGDvv+z4tHwghMLlrO1hRpXayKuOK+MiRaUKknQAS3VfsGBG5wMxCrvlQ2kyvnO3OBhzOQaZathHfEJERVW0D/yd0w1oRPlvMTNtnP/VCPz6xG9Tw3ptzTvprO0eDQYGqWkUQv2Fm3zKzJEkSpqenM3HJmHPuXuf4toh8E5O7RQREPdHILGVZttM0dXneXRVCGGy1Wp1Sg3Xb07QAF2ZxqJmZOOcws0ERqQln7atcZ/Oq//5x4BIxVqlqSRR1n1uWemGWZR70S8C3EFkJzIB2V605uvH4da+lA76EEKpYFvZJd5fwk44lAvgTjpqTElzk/BSu3fB+dt/7bRKb5b57tnL44YeTpT5mb0mSKq9dWYmmSQKaVZebrV5rjuVE4EmV6PgLIvJLxNUsRILQsPilT5KkPu/PRPUzeWeWUHRDI818t9vFzKQSf7XOulL5/gXvfQl0kiT5RLfb/Vj1t0RVFXEKBLXSxLyZcyKAU1FEEcSSJNlZ+Rj+tlmQoigCTmRsfNQ+99mXy/jYduuL9UVEHldxt5PEyA/Ym0LdA9wG3KqqSZqmzcMPP/xV27bteDQxVO6DwNOKovhBmqYCWLvb6TohMSNo3EweTCv1En4EWDKC/IQjhBA5qipj882b38/Oe75Fmc+gOI455hiSxD3BzA53zmVqZQqQNrKRJG0APBzcEFGsy6vLGmgL9Ewih/RO4DTgidREUTjdhCcKnIfZE1T1mUAX0Sc7z6mYk1Bao3JvQbzzPk1wzrm6zX16wURVm865NEmS3HtflsHaPsmKMuRlmnkajVSygcwPjyx3aTbgC1UXSnOKYcJ/EgnWCSL+DHCg0hAjGR3d4fK87atYXyO6z/wBkeB9rXq+lDmiXyV6pkHl9uKcK/M872zbts2J2F+AThD1gG9V1UHAgXPd2Qm5cdMlOiCEzPUHgCxxfw9VLBHAhwDqpJ0CWHeClE4v/At4HnBdnucXee/VSSKVCDr5g9tvBTgR3LDR+JrRmCXqrQB+B3iGme0kxuj+K9EJ+UvAV6rXrwJXV58/papXmJkHniUiWh0AqGpeJTkNc1xoL/FpCVAURSOEYCEEE5EsD8E1Bpb5kAy5gZXHu8GVj5Sn/+GHZdnhj8Q1hs03GxYwMbPvAl+rONU3iMjD4P9v7/xi7KqqMP5ba+9zzp2Z3nZmejvM0D9AtSJFwURfTFAQJNJSitNGo08mJEQimhAEJEBBIBhFxMRASERNfFLjE9I2iiglxOCLaEAhRNJEBClQOnRm2jvnnr3X8uHeOzQG3zvJfMl+vufmJN9Zf779fdTunjTgiA3lK6WI3AB83MyO0Z/hCe91Ou+nEqcoiqJqjaYQy8LMXgeuof+x2Csi19EnzbLXXZBjb7ySnzzwIG4YyzPAVaxUrBLgaYwhuZwqbh60osvGnma2xl3KGOMNKaVHcs4XmtHB/PytZ5/1iHu+VkN5smnGHg1hfbdJUsZC3cz2DPSBP+90Jl8IIRigMUYXER9YxMfBkKuFGIj9wk3cMpcgdgFiJkHJbohTYo5ZfyGQc8bMhpWgmlnt7jEUEQmKBnpVa9THpz/o7emP+KWz99mle+7IR4188ZU3p/Ubt+XkIatEd8+1u38X+Ke7XwD8AfgKcJ57Pgtsm3v+mIg/BHwHKHLOD9MncQVqsNbgFklFX/qDDFwbstEkExlrjy+W1UgEHqN/Da6sitatmHxGROqUe2bNoii1hgHvs7oFXtFYJcAVgKG8w4AsBXUKZJOhm/HDZmkfYj3ErqFfrb2kyt9V9bpYKHXdfTTG+Jvrr/+BTk5O9lJKFxdF8TURWQAef+edd7xPXOopa5GpNHlZiI5ml0goy3qkNaZlWe4H/pxz3mJmN4qInrL0GB88TzEkvqqqcHdSSm0GLWcIYTgrZGLDTL5s12354h1fzyfA5lPwrhfedbjkipvYsHk7sRqLKqW7+3Pu/lXgeXffSl+b9+zgPCMifwWuBd4FHjpy5Mi9uBZIxZr2equqkcbMUFUtYxHdc3TPlbj1kkmYmv6Az37xh6xbN57oV4z3A/tFpAP8BPhE30faglrTN5Igsdr+rmysEuAKgWjft+DK3bdw5pbzMcqhxXtPA9+HfC3k39F3OXnbjBfN7DFVuWHbts03h7CQH/3x9dI9edyFsFlE/lTX9YPAy0AU8SLEws/Y+KHmjE3bfeOWj6bpTefqhuktwYlhqWk8J3cN3B2iPA30cs6VpeyYI+LPivgh4IXBTNCbnJCglK3qOY3ydCj0JTPzEIK0yiqEMIqFYdJb37/FcHrACeBTn/sm451zLJYjQTSmqioOufuXgH3A7939NXc/nnOeA33CXX5GnwRvnpmZMSP0JqbOLvd++Ud0pqbTSKtUS/kvKaUDQfx5xRrFWiMj7ezFelkCL1trRhRLQA16e87NfrCjwIUxRlcnH597mycO/pSwnEm3ipWK1fd32kOX8yyiN1QGB3/9APXcYTTNEwvRbDXuiUsu/Wx86slDM6pxfc55PkZ9FcmNmRWWJbsLqioxqhZFEUIIS91uFxeNrlVqT2xi5957ZCDvkGGS2m8PfM/ffPVlKk3u7iLqrZxzAcyLEwY6uAA6hoS0YXr6xMLCQlhYmLeoWFEUYzk3QTUu9ZL1RkbXMT4+zY69d/JmA0mr5XZ5WFGGENDUZS1w6OD9cvTIKwX5pHq2GqAMsd1YHuv1lqZCEbNImAPeGjhMawylLeUgnTO361W7bkzP/PHu8K9XXsxugmqcmJjszJVlyZE3XtfJM7bZ5bPfpufEZw/cm9567cVBxpxKTlapaiFKqVHezblhw+YP+6dn7/J3a8isJiKtZKxWgKc93nNAGZQl7PjCTUx0NsrI6FoxF3cUpOTpQ88k1fhvEfmbqh4WCSk1QtBWE0JhgwNo0+ulpW63RsHNizw2tdUv23uPnwAWwRfB58HnwC7a+S3vbDqHUJaoiOcmdUVk3iwRCvVQRAeSaDzeXj914srPP0B7bcdHWmspixZNU58QkXlX6XWXGkbWbeSi3XdyrOk3kdkanIx5AjGcTJPq/v8tkE/uvMXXjG9sRFu1o1RVxdZzzlrI9dKRGMvnxfUfivxHnCQOuJqrMtmZwShyiEjTyy4ijI6OEovW3KtvznP57vtpT55pJi0aIIF3e4GiXEM/Xl49eKt+4uBTi4IeG8wNMaJ3e+9dIB5mL7/vWcVpjVUCXAEYboHNhR798uyqPbfTHp/AnUHKWf9+yHBxMhAEc/ToMf7HUCGf+trdnanpGbti9x00QE+wpNATXKrKm1DSA3bs2ufrJsZxd8pQ9h2oVUmpR9P0tcYmcHzhJI/vv4fZPfd5pzO1bIzQ/zHl3PO2s/Pq20lAD10OQT/1eYYzz4yy2Ag9kN177mJqahoRoa5rDh8+3K8S/0/11V47zlV77vUdu77hSwnP2c3MOLm4SF03VK21/PJX+wixYufVt9L05cx51+xttNsTDqCuKAW7d82irrj74Gs0CGZfJbgVj/8CRlbcqkZ5urQAAAAASUVORK5CYII=" alt="Valentine Jaipur logo">
+    <h1>Client Calendar</h1>
+    <p class="sub">Sign in with your sales-rep or admin credentials to view scheduled client visits.</p>
+    <div id="loginError" class="login-error hidden"></div>
+    <form id="loginForm">
+      <div class="field">
+        <label for="username">Username</label>
+        <input type="text" id="username" autocomplete="username" placeholder="e.g. HRK, Retail, Shailendra, Self or admin">
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" autocomplete="current-password" placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn btn-primary">Sign In</button>
+    </form>
+    <div class="login-hint">Sales reps see only their own client visit schedule. The admin login shows the master calendar for every rep with a filter.</div>
+  </div>
+</div>
+
+<!-- ============ APP SCREEN ============ -->
+<div id="appScreen" class="hidden">
+  <header class="topbar">
+    <div class="brandline">
+      <div class="brand-mark" style="width:34px;height:34px;font-size:15px;">V</div>
+      <div>
+        <h1 id="pageTitle">Sales Visit Calendar</h1>
+        <div class="tag" id="pageSub">Client visit planning</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="user-chip"><span class="dot"></span><span id="userChipLabel">—</span></span>
+      <button class="btn btn-ghost" id="logoutBtn">Log out</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <aside class="sidebar">
+      <div class="panel" id="adminFilterPanel">
+        <h3>Filter</h3>
+        <select id="repFilter"></select>
+      </div>
+
+      <div class="panel">
+        <h3>Importance &amp; visit cadence</h3>
+        <div class="legend-row"><span class="legend-swatch" style="background:var(--high-bg);border:1px solid var(--high-line);"></span> <b>High</b> &gt; ₹15L/yr <span class="cadence">every 15 days</span></div>
+        <div class="legend-row"><span class="legend-swatch" style="background:var(--med-bg);border:1px solid var(--med-line);"></span> <b>Medium</b> ₹4-15L/yr <span class="cadence">every 30 days</span></div>
+        <div class="legend-row"><span class="legend-swatch" style="background:var(--low-bg);border:1px solid var(--low-line);"></span> <b>Low</b> &lt; ₹4L/yr <span class="cadence">every 60 days</span></div>
+        <div style="font-size:11px;color:var(--ink-soft);margin-top:8px;line-height:1.5;">Priority = average annual earning (total earning \u00f7 years since first purchase).</div>
+      </div>
+
+      <div class="panel" style="flex:1;display:flex;flex-direction:column;min-height:0;">
+        <h3>Clients</h3>
+        <input type="text" class="search-input" id="clientSearch" placeholder="Search client...">
+        <div class="client-mini-list" id="clientMiniList"></div>
+      </div>
+
+      <div class="panel">
+        <h3>Snapshot</h3>
+        <div class="stat-row"><span>Total clients</span><b id="statTotal">-</b></div>
+        <div class="stat-row"><span>High priority</span><b id="statHigh">-</b></div>
+        <div class="stat-row"><span>Medium priority</span><b id="statMed">-</b></div>
+        <div class="stat-row"><span>Low priority</span><b id="statLow">-</b></div>
+        <div class="stat-row"><span>Visits due this month</span><b id="statDue">-</b></div>
+      </div>
+
+      <div class="panel">
+        <h3>Data</h3>
+        <div style="font-size:12px;color:var(--ink-soft);margin-bottom:10px;line-height:1.5;">Reschedules and notes are kept in this browser tab. Export before closing to keep them.</div>
+        <div class="footer-actions">
+          <button class="btn-sm" id="exportBtn">Export edits</button>
+          <label class="btn-sm" style="text-align:center;cursor:pointer;">
+            Import
+            <input type="file" id="importFile" accept="application/json" class="hidden">
+          </label>
+        </div>
+      </div>
+    </aside>
+
+    <section>
+      <div class="view-toggle">
+        <button class="toggle-btn active" id="tabCalendar">Calendar</button>
+        <button class="toggle-btn" id="tabList">Client List</button>
+      </div>
+
+      <div id="calendarView">
+        <div class="priority-filter-bar">
+          <span class="pf-label">Priority:</span>
+          <button class="pf-btn active" data-priority="ALL">All</button>
+          <button class="pf-btn pf-high" data-priority="High">High</button>
+          <button class="pf-btn pf-medium" data-priority="Medium">Medium</button>
+          <button class="pf-btn pf-low" data-priority="Low">Low</button>
+        </div>
+        <div class="cal-header">
+          <div class="cal-nav">
+            <button id="prevMonth">‹</button>
+            <div class="cal-title" id="calTitle">Month Year</div>
+            <button id="nextMonth">›</button>
+          </div>
+          <button class="cal-today-btn" id="todayBtn">Today</button>
+        </div>
+        <div class="calendar-grid">
+          <div class="dow-row">
+            <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+          </div>
+          <div class="weeks" id="weeksContainer"></div>
+        </div>
+      </div>
+
+      <div id="listView" class="hidden">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-key="name">Client</th>
+                <th data-key="rep" id="repColHeader">Rep</th>
+                <th data-key="tier">Priority</th>
+                <th data-key="total_value" id="valueColHeader">Total Earned (₹)</th>
+                <th data-key="avg_annual_earning" id="earningColHeader">Projected Annual Pace (₹)</th>
+                <th data-key="history_days" id="historyColHeader">History</th>
+                <th data-key="visits" id="visitsColHeader">Visits</th>
+                <th data-key="last_purchase">Last Purchase</th>
+                <th data-key="next_due">Next Visit Due</th>
+                <th data-key="last_visit">Last Visit</th>
+                <th data-key="last_called">Last Called</th>
+              </tr>
+            </thead>
+            <tbody id="listBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ============ DAY MODAL ============ -->
+<div id="dayModalBackdrop" class="modal-backdrop hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="modalDateTitle">Visits</h2>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<!-- ============ CLIENT DETAIL / DRILL-DOWN MODAL ============ -->
+<div id="clientModalBackdrop" class="modal-backdrop hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="clientModalTitle">Client</h2>
+      <button class="modal-close" id="clientModalClose">✕</button>
+    </div>
+    <div id="clientModalBody"></div>
+  </div>
+</div>
+
+<script id="dataStore" type="application/json">
+{"as_of": "2026-07-01", "reps": ["HRK", "Retail", "Self", "Shailendra"], "thresholds": {"high_min": 1500000, "medium_min": 400000}, "clients": [{"name": "VUMMIDI BANGARU JEWELLERS INDIA PVT LTD", "rep": "Self", "total_value": 11105314, "avg_annual_earning": 67603602, "visits": 3, "first_purchase": "2026-05-02", "last_purchase": "2026-06-20", "avg_gap_days": 24.5, "days_since_last": 11, "tier": "High", "cadence_days": 15, "next_appointments": ["2026-07-05", "2026-07-20", "2026-08-04", "2026-08-19", "2026-09-03", "2026-09-18"]}, {"name": "HAZOORILAL & SONS JEWELLERS PVT. LTD.", "rep": "HRK", "total_value": 24568561, "avg_annual_earning": 9213210, "visits": 16, "first_purchase": "2023-10-31", "last_purchase": "2026-03-07", "avg_gap_days": 57.2, "days_since_last": 116, "tier": "High", "cadence_days": 15, "next_appointments": ["2026-07-05", "2026-07-20", "2026-08-04", "2026-08-19", "2026-09-03", "2026-09-18"]}, {"name": "Gems And Jewels Palace", "rep": "Shailendra", "total_value": 17857472, "avg_annual_earning": 8012827, "visits": 11, "first_purchase": "2024-04-08", "last_purchase": "2026-03-05", "avg_gap_days": 69.6, "days_since_last": 118, "tier": "High", "cadence_days": 15, "next_appointments": ["2026-07-03", "2026-07-18", "2026-08-02", "2026-08-17", "2026-09-01", "2026-09-16"]}, {"name": "AMIT KHATORIA", "rep": "Retail", "total_value": 2254300, "avg_annual_earning": 4960139, "visits": 1, "first_purchase": "2026-01-16", "last_purchase": "2026-01-16", "avg_gap_days": 400, "days_since_last": 166, "tier": "High", "cadence_days": 15, "next_appointments": ["2026-07-15", "2026-07-30", "2026-08-14", "2026-08-29", "2026-09-13", "2026-09-28"]}, {"name": "HAZOORILAL JEWELLERS PVT. LTD.", "rep": "HRK", "total_value": 5703728, "avg_annual_earning": 4671046, "visits": 13, "first_purchase": "2025-04-11", "last_purchase": "2026-03-21", "avg_gap_days": 28.7, "days_since_last": 102, "tier": "High", "cadence_days": 15, "next_appointments": ["2026-07-04", "2026-07-19", "2026-08-03", "2026-08-18", "2026-09-02", "2026-09-17"]}, {"name": "SHRI KRISHNA JEWELLERS PVT. LTD. ( B-HILL )", "rep": "HRK", "total_value": 10044297, "avg_annual_earning": 3190156, "visits": 12, "first_purchase": "2023-05-08", "last_purchase": "2025-09-03", "avg_gap_days": 77.2, "days_since_last": 301, "tier": "High", "cadence_days": 15, "next_appointments": ["2026-07-15", "2026-07-30", "2026-08-14", "2026-08-29", "2026-09-13", "2026-09-28"]}, {"name": "Bhandari Jewellers", "rep": "Retail", "total_value": 10030437, "avg_annual_earning": 3185754, "visits": 18, "first_purchase": "2023-05-08", "last_purchase": "2026-02-21", "avg_gap_days": 60.0, "days_since_last": 130, "tier": "High", "cadence_days": 15, "next_appointments": ["2026-07-06", "2026-07-21", "2026-08-05", "2026-08-20", "2026-09-04", "2026-09-19"]}, {"name": "CH Jewellers Pvt Ltd.", "rep": "HRK", "total_value": 8807591, "avg_annual_earning": 3066704, "visits": 24, "first_purchase": "2023-08-17", "last_purchase": "2026-05-02", "avg_gap_days": 43.0, "days_since_last": 60, "tier": "High", "cadence_days": 15, "next_appointments": ["2026-07-01", "2026-07-16", "2026-07-31", "2026-08-15", "2026-08-30", "2026-09-14"]}, {"name": "ADVIKA JAIN", "rep": "Retail", "total_value": 220400, "avg_annual_earning": 2875039, "visits": 1, "first_purchase": "2026-06-03", "last_purchase": "2026-06-03", "avg_gap_days": 400, "days_since_last": 28, "tier": "High", "cadence_days": 15, "next_appointments": ["2026-07-03", "2026-07-18", "2026-08-02", "2026-08-17", "2026-09-01", "2026-09-16"]}, {"name": "ANUPAM  BANSAL", "rep": "Retail", "total_value": 3706400, "avg_annual_earning": 2762781, "visits": 1, "first_purchase": "2025-02-26", "last_purchase": "2025-02-26", "avg_gap_days": 400, "days_since_last": 490, "tier": "High", "cadence_days": 15, "next_appointments": ["2026-07-06", "2026-07-21", "2026-08-05", "2026-08-20", "2026-09-04", "2026-09-19"]}, {"name": "NEELKANTH GOLD AND DIAMONDS PVT LTD", "rep": "HRK", "total_value": 3240419, "avg_annual_earning": 2395877, "visits": 5, "first_purchase": "2025-02-22", "last_purchase": "2026-06-10", "avg_gap_days": 118.2, "days_since_last": 21, "tier": "High", "cadence_days": 15, "next_appointments": ["2026-07-10", "2026-07-25", "2026-08-09", "2026-08-24", "2026-09-08", "2026-09-23"]}, {"name": "GEM HOUSE", "rep": "Retail", "total_value": 5035158, "avg_annual_earning": 2366913, "visits": 10, "first_purchase": "2024-05-15", "last_purchase": "2026-04-06", "avg_gap_days": 76.8, "days_since_last": 86, "tier": "High", "cadence_days": 15, "next_appointments": ["2026-07-05", "2026-07-20", "2026-08-04", "2026-08-19", "2026-09-03", "2026-09-18"]}, {"name": "RATHOD JEWELLERS", "rep": "HRK", "total_value": 7069923, "avg_annual_earning": 2269147, "visits": 89, "first_purchase": "2023-05-20", "last_purchase": "2026-06-18", "avg_gap_days": 12.8, "days_since_last": 13, "tier": "High", "cadence_days": 15, "next_appointments": ["2026-07-03", "2026-07-18", "2026-08-02", "2026-08-17", "2026-09-01", "2026-09-16"]}, {"name": "Harsahaimal Shaimal Jewellers Pvt Ltd", "rep": "HRK", "total_value": 3633330, "avg_annual_earning": 1957336, "visits": 18, "first_purchase": "2024-08-22", "last_purchase": "2026-06-09", "avg_gap_days": 38.6, "days_since_last": 22, "tier": "High", "cadence_days": 15, "next_appointments": ["2026-07-09", "2026-07-24", "2026-08-08", "2026-08-23", "2026-09-07", "2026-09-22"]}, {"name": "DIVYA JI KHANDELWAL", "rep": "Retail", "total_value": 1063132, "avg_annual_earning": 1789442, "visits": 1, "first_purchase": "2025-11-26", "last_purchase": "2025-11-26", "avg_gap_days": 400, "days_since_last": 217, "tier": "High", "cadence_days": 15, "next_appointments": ["2026-07-09", "2026-07-24", "2026-08-08", "2026-08-23", "2026-09-07", "2026-09-22"]}, {"name": "AB Jewels", "rep": "HRK", "total_value": 840148, "avg_annual_earning": 1763585, "visits": 6, "first_purchase": "2026-01-08", "last_purchase": "2026-05-28", "avg_gap_days": 28.0, "days_since_last": 34, "tier": "High", "cadence_days": 15, "next_appointments": ["2026-07-12", "2026-07-27", "2026-08-11", "2026-08-26", "2026-09-10", "2026-09-25"]}, {"name": "A-JEWELS", "rep": "Shailendra", "total_value": 289381, "avg_annual_earning": 1704780, "visits": 2, "first_purchase": "2026-04-30", "last_purchase": "2026-06-08", "avg_gap_days": 39.0, "days_since_last": 23, "tier": "High", "cadence_days": 15, "next_appointments": ["2026-07-08", "2026-07-23", "2026-08-07", "2026-08-22", "2026-09-06", "2026-09-21"]}, {"name": "ANMOL  JEWELLERS", "rep": "HRK", "total_value": 4035857, "avg_annual_earning": 1702190, "visits": 27, "first_purchase": "2024-02-16", "last_purchase": "2026-05-15", "avg_gap_days": 31.5, "days_since_last": 47, "tier": "High", "cadence_days": 15, "next_appointments": ["2026-07-14", "2026-07-29", "2026-08-13", "2026-08-28", "2026-09-12", "2026-09-27"]}, {"name": "SALONI JAIN", "rep": "Retail", "total_value": 385100, "avg_annual_earning": 1562864, "visits": 1, "first_purchase": "2026-04-02", "last_purchase": "2026-04-02", "avg_gap_days": 400, "days_since_last": 90, "tier": "High", "cadence_days": 15, "next_appointments": ["2026-07-01", "2026-07-16", "2026-07-31", "2026-08-15", "2026-08-30", "2026-09-14"]}, {"name": "ASHA  KHATORIA", "rep": "Retail", "total_value": 482300, "avg_annual_earning": 1344733, "visits": 1, "first_purchase": "2026-02-20", "last_purchase": "2026-02-20", "avg_gap_days": 400, "days_since_last": 131, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-20", "2026-08-19", "2026-09-18", "2026-10-18", "2026-11-17", "2026-12-17"]}, {"name": "D.P.ABHUSHAN LTD (RATLAM)", "rep": "HRK", "total_value": 3578758, "avg_annual_earning": 1130745, "visits": 42, "first_purchase": "2023-05-02", "last_purchase": "2026-06-18", "avg_gap_days": 27.9, "days_since_last": 13, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-18", "2026-08-17", "2026-09-16", "2026-10-16", "2026-11-15", "2026-12-15"]}, {"name": "ANAND  SHAKTIKUMAR  SANCHETI", "rep": "Retail", "total_value": 1446000, "avg_annual_earning": 1116599, "visits": 1, "first_purchase": "2025-03-15", "last_purchase": "2025-03-15", "avg_gap_days": 400, "days_since_last": 473, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-08", "2026-08-07", "2026-09-06", "2026-10-06", "2026-11-05", "2026-12-05"]}, {"name": "Ranka Jewellers And Sons Private Limited", "rep": "HRK", "total_value": 787572, "avg_annual_earning": 1110660, "visits": 2, "first_purchase": "2025-10-15", "last_purchase": "2026-01-06", "avg_gap_days": 83.0, "days_since_last": 176, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-05", "2026-08-04", "2026-09-03", "2026-10-03", "2026-11-02", "2026-12-02"]}, {"name": "P N GADGIL JEWELLERS LIMITED", "rep": "HRK", "total_value": 1354117, "avg_annual_earning": 1054566, "visits": 3, "first_purchase": "2025-03-19", "last_purchase": "2025-11-10", "avg_gap_days": 118.0, "days_since_last": 233, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-08", "2026-08-07", "2026-09-06", "2026-10-06", "2026-11-05", "2026-12-05"]}, {"name": "ZAHVA INC.", "rep": "Retail", "total_value": 2095288, "avg_annual_earning": 908912, "visits": 4, "first_purchase": "2024-03-11", "last_purchase": "2024-05-16", "avg_gap_days": 22.0, "days_since_last": 776, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-05", "2026-08-04", "2026-09-03", "2026-10-03", "2026-11-02", "2026-12-02"]}, {"name": "MALABAR GOLD AND DIAMONDS FZCO", "rep": "Self", "total_value": 1533965, "avg_annual_earning": 889335, "visits": 6, "first_purchase": "2024-10-09", "last_purchase": "2026-03-13", "avg_gap_days": 104.0, "days_since_last": 110, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-11", "2026-08-10", "2026-09-09", "2026-10-09", "2026-11-08", "2026-12-08"]}, {"name": "DHANISHTHA CHOPRA", "rep": "Retail", "total_value": 500015, "avg_annual_earning": 818970, "visits": 1, "first_purchase": "2025-11-20", "last_purchase": "2025-11-20", "avg_gap_days": 400, "days_since_last": 223, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-18", "2026-08-17", "2026-09-16", "2026-10-16", "2026-11-15", "2026-12-15"]}, {"name": "D.P. JEWELLINE PVT LTD", "rep": "HRK", "total_value": 1314277, "avg_annual_earning": 797408, "visits": 5, "first_purchase": "2024-11-06", "last_purchase": "2026-05-01", "avg_gap_days": 135.2, "days_since_last": 61, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-30", "2026-08-29", "2026-09-28", "2026-10-28", "2026-11-27", "2026-12-27"]}, {"name": "FINE  GEMS & JEWELS", "rep": "Self", "total_value": 1491099, "avg_annual_earning": 761712, "visits": 4, "first_purchase": "2024-07-16", "last_purchase": "2026-03-21", "avg_gap_days": 204.3, "days_since_last": 102, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-19", "2026-08-18", "2026-09-17", "2026-10-17", "2026-11-16", "2026-12-16"]}, {"name": "PRIYANKA  SINGHANIA", "rep": "Retail", "total_value": 328900, "avg_annual_earning": 723679, "visits": 1, "first_purchase": "2026-01-16", "last_purchase": "2026-01-16", "avg_gap_days": 400, "days_since_last": 166, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-15", "2026-08-14", "2026-09-13", "2026-10-13", "2026-11-12", "2026-12-12"]}, {"name": "SANJAY  CHITLANGIA", "rep": "Retail", "total_value": 45200, "avg_annual_earning": 717796, "visits": 1, "first_purchase": "2026-06-08", "last_purchase": "2026-06-08", "avg_gap_days": 400, "days_since_last": 23, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-08", "2026-08-07", "2026-09-06", "2026-10-06", "2026-11-05", "2026-12-05"]}, {"name": "M/s Karrat 22 Enterprises", "rep": "Self", "total_value": 1316178, "avg_annual_earning": 688731, "visits": 3, "first_purchase": "2024-08-02", "last_purchase": "2025-09-23", "avg_gap_days": 208.5, "days_since_last": 281, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-20", "2026-08-19", "2026-09-18", "2026-10-18", "2026-11-17", "2026-12-17"]}, {"name": "ANJU JI CHITLANGIA (DELHI)", "rep": "Retail", "total_value": 159900, "avg_annual_earning": 679110, "visits": 1, "first_purchase": "2026-04-06", "last_purchase": "2026-04-06", "avg_gap_days": 400, "days_since_last": 86, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-05", "2026-08-04", "2026-09-03", "2026-10-03", "2026-11-02", "2026-12-02"]}, {"name": "STARFIRE GEMS PVT. LTD.", "rep": "HRK", "total_value": 1954780, "avg_annual_earning": 642649, "visits": 17, "first_purchase": "2023-06-16", "last_purchase": "2026-06-20", "avg_gap_days": 68.8, "days_since_last": 11, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-20", "2026-08-19", "2026-09-18", "2026-10-18", "2026-11-17", "2026-12-17"]}, {"name": "Harsahaimal Shiamlal Jewellers Lucknow Pvt. Ltd.", "rep": "HRK", "total_value": 1433280, "avg_annual_earning": 641551, "visits": 21, "first_purchase": "2024-04-06", "last_purchase": "2026-05-28", "avg_gap_days": 39.1, "days_since_last": 34, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-27", "2026-08-26", "2026-09-25", "2026-10-25", "2026-11-24", "2026-12-24"]}, {"name": "AKM Mehra Sons Jewellers NDSE", "rep": "HRK", "total_value": 1675108, "avg_annual_earning": 633368, "visits": 10, "first_purchase": "2023-11-08", "last_purchase": "2024-09-06", "avg_gap_days": 33.7, "days_since_last": 663, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-28", "2026-08-27", "2026-09-26", "2026-10-26", "2026-11-25", "2026-12-25"]}, {"name": "R B GEMS & JEWELS ,GF XVI/2105", "rep": "Shailendra", "total_value": 566600, "avg_annual_earning": 627123, "visits": 1, "first_purchase": "2025-08-05", "last_purchase": "2025-08-05", "avg_gap_days": 400, "days_since_last": 330, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-01", "2026-07-31", "2026-08-30", "2026-09-29", "2026-10-29", "2026-11-28"]}, {"name": "SHALINI SACHETI", "rep": "Retail", "total_value": 1121400, "avg_annual_earning": 616854, "visits": 1, "first_purchase": "2024-09-05", "last_purchase": "2024-09-05", "avg_gap_days": 400, "days_since_last": 664, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-27", "2026-08-26", "2026-09-25", "2026-10-25", "2026-11-24", "2026-12-24"]}, {"name": "Jaisalmer Arts & Crafts", "rep": "Shailendra", "total_value": 284100, "avg_annual_earning": 586257, "visits": 2, "first_purchase": "2026-01-05", "last_purchase": "2026-02-16", "avg_gap_days": 42.0, "days_since_last": 135, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-16", "2026-08-15", "2026-09-14", "2026-10-14", "2026-11-13", "2026-12-13"]}, {"name": "Moti Sons Jewellers Ltd", "rep": "Self", "total_value": 1587800, "avg_annual_earning": 560874, "visits": 5, "first_purchase": "2023-09-01", "last_purchase": "2024-11-09", "avg_gap_days": 108.8, "days_since_last": 599, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-02", "2026-08-01", "2026-08-31", "2026-09-30", "2026-10-30", "2026-11-29"]}, {"name": "MADAN LAL CHHAGAN LAL", "rep": "HRK", "total_value": 736174, "avg_annual_earning": 557858, "visits": 3, "first_purchase": "2025-03-06", "last_purchase": "2026-05-13", "avg_gap_days": 216.5, "days_since_last": 49, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-12", "2026-08-11", "2026-09-10", "2026-10-10", "2026-11-09", "2026-12-09"]}, {"name": "GEM ARTS EMPORIUM", "rep": "HRK", "total_value": 1009203, "avg_annual_earning": 555138, "visits": 3, "first_purchase": "2024-09-05", "last_purchase": "2025-09-11", "avg_gap_days": 185.5, "days_since_last": 293, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-08", "2026-08-07", "2026-09-06", "2026-10-06", "2026-11-05", "2026-12-05"]}, {"name": "PIETRE DEL MONDO", "rep": "Self", "total_value": 279130, "avg_annual_earning": 554089, "visits": 1, "first_purchase": "2025-12-29", "last_purchase": "2025-12-29", "avg_gap_days": 400, "days_since_last": 184, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-27", "2026-08-26", "2026-09-25", "2026-10-25", "2026-11-24", "2026-12-24"]}, {"name": "REGAL JEWELLERS LLP", "rep": "Self", "total_value": 749318, "avg_annual_earning": 536644, "visits": 5, "first_purchase": "2025-02-06", "last_purchase": "2025-08-05", "avg_gap_days": 45.0, "days_since_last": 330, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-01", "2026-07-31", "2026-08-30", "2026-09-29", "2026-10-29", "2026-11-28"]}, {"name": "Panna Gems & Jewellery Pvt. Ltd.", "rep": "HRK", "total_value": 1119000, "avg_annual_earning": 534967, "visits": 1, "first_purchase": "2024-05-28", "last_purchase": "2024-05-28", "avg_gap_days": 400, "days_since_last": 764, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-17", "2026-08-16", "2026-09-15", "2026-10-15", "2026-11-14", "2026-12-14"]}, {"name": "GANDHI JEWELLERS", "rep": "HRK", "total_value": 393906, "avg_annual_earning": 515678, "visits": 4, "first_purchase": "2025-09-25", "last_purchase": "2026-05-27", "avg_gap_days": 81.3, "days_since_last": 35, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-26", "2026-08-25", "2026-09-24", "2026-10-24", "2026-11-23", "2026-12-23"]}, {"name": "Modi Export House", "rep": "Retail", "total_value": 1378890, "avg_annual_earning": 459106, "visits": 5, "first_purchase": "2023-06-30", "last_purchase": "2024-12-13", "avg_gap_days": 133.0, "days_since_last": 565, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-06", "2026-08-05", "2026-09-04", "2026-10-04", "2026-11-03", "2026-12-03"]}, {"name": "PANNA  HANDICRAFTS", "rep": "Shailendra", "total_value": 1367580, "avg_annual_earning": 449603, "visits": 8, "first_purchase": "2023-06-16", "last_purchase": "2025-12-04", "avg_gap_days": 128.9, "days_since_last": 209, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-02", "2026-08-01", "2026-08-31", "2026-09-30", "2026-10-30", "2026-11-29"]}, {"name": "ABHA JI BAFNA", "rep": "Retail", "total_value": 78300, "avg_annual_earning": 439986, "visits": 1, "first_purchase": "2026-04-27", "last_purchase": "2026-04-27", "avg_gap_days": 400, "days_since_last": 65, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-26", "2026-08-25", "2026-09-24", "2026-10-24", "2026-11-23", "2026-12-23"]}, {"name": "SANT RAM MANGAT RAM JAIN JEWELLERS", "rep": "Shailendra", "total_value": 185702, "avg_annual_earning": 416122, "visits": 1, "first_purchase": "2026-01-19", "last_purchase": "2026-01-19", "avg_gap_days": 400, "days_since_last": 163, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-18", "2026-08-17", "2026-09-16", "2026-10-16", "2026-11-15", "2026-12-15"]}, {"name": "Verma Fine Jewels Private Limited", "rep": "Shailendra", "total_value": 74600, "avg_annual_earning": 406681, "visits": 1, "first_purchase": "2026-04-25", "last_purchase": "2026-04-25", "avg_gap_days": 400, "days_since_last": 67, "tier": "Medium", "cadence_days": 30, "next_appointments": ["2026-07-24", "2026-08-23", "2026-09-22", "2026-10-22", "2026-11-21", "2026-12-21"]}, {"name": "Genera Online Private Limited", "rep": "Self", "total_value": 971800, "avg_annual_earning": 393514, "visits": 1, "first_purchase": "2024-01-11", "last_purchase": "2024-01-11", "avg_gap_days": 400, "days_since_last": 902, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-28", "2026-10-27", "2026-12-26", "2027-02-24", "2027-04-25", "2027-06-24"]}, {"name": "Moti Gold And Diamonds LLP", "rep": "HRK", "total_value": 346627, "avg_annual_earning": 393185, "visits": 4, "first_purchase": "2025-08-13", "last_purchase": "2026-06-04", "avg_gap_days": 98.3, "days_since_last": 27, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-03", "2026-10-02", "2026-12-01", "2027-01-30", "2027-03-31", "2027-05-30"]}, {"name": "FRONTIER JEWELLERS", "rep": "Shailendra", "total_value": 889360, "avg_annual_earning": 383970, "visits": 13, "first_purchase": "2024-03-07", "last_purchase": "2026-01-23", "avg_gap_days": 57.2, "days_since_last": 159, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-22", "2026-09-20", "2026-11-19", "2027-01-18", "2027-03-19", "2027-05-18"]}, {"name": "RIKHAB DAS UDAY CHAND", "rep": "HRK", "total_value": 820275, "avg_annual_earning": 380210, "visits": 7, "first_purchase": "2024-05-04", "last_purchase": "2026-04-24", "avg_gap_days": 120.0, "days_since_last": 68, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-22", "2026-10-21", "2026-12-20", "2027-02-18", "2027-04-19", "2027-06-18"]}, {"name": "INAARA JEWELS", "rep": "Shailendra", "total_value": 393695, "avg_annual_earning": 375449, "visits": 1, "first_purchase": "2025-06-13", "last_purchase": "2025-06-13", "avg_gap_days": 400, "days_since_last": 383, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-07", "2026-10-06", "2026-12-05", "2027-02-03", "2027-04-04", "2027-06-03"]}, {"name": "MEENA JEWELLERS", "rep": "Self", "total_value": 1023900, "avg_annual_earning": 369545, "visits": 2, "first_purchase": "2023-09-23", "last_purchase": "2025-09-16", "avg_gap_days": 724.0, "days_since_last": 288, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-13", "2026-09-11", "2026-11-10", "2027-01-09", "2027-03-10", "2027-05-09"]}, {"name": "LAHORE JEWELLERS", "rep": "Shailendra", "total_value": 1038714, "avg_annual_earning": 363749, "visits": 13, "first_purchase": "2023-08-23", "last_purchase": "2026-05-08", "avg_gap_days": 82.4, "days_since_last": 54, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-07", "2026-09-05", "2026-11-04", "2027-01-03", "2027-03-04", "2027-05-03"]}, {"name": "P.C. CHANDRA & SONS (INDIA) PRIVATE LIMITED(NEW)", "rep": "HRK", "total_value": 610998, "avg_annual_earning": 362284, "visits": 4, "first_purchase": "2024-10-23", "last_purchase": "2026-05-21", "avg_gap_days": 191.7, "days_since_last": 41, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-20", "2026-09-18", "2026-11-17", "2027-01-16", "2027-03-17", "2027-05-16"]}, {"name": "VINSARA JEWELS", "rep": "Shailendra", "total_value": 473950, "avg_annual_earning": 359150, "visits": 5, "first_purchase": "2025-03-06", "last_purchase": "2026-04-07", "avg_gap_days": 99.2, "days_since_last": 85, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-05", "2026-10-04", "2026-12-03", "2027-02-01", "2027-04-02", "2027-06-01"]}, {"name": "NEW JUMBO LIFESTYLE", "rep": "HRK", "total_value": 590630, "avg_annual_earning": 358948, "visits": 1, "first_purchase": "2024-11-07", "last_purchase": "2024-11-07", "avg_gap_days": 400, "days_since_last": 601, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-29", "2026-10-28", "2026-12-27", "2027-02-25", "2027-04-26", "2027-06-25"]}, {"name": "Gems Paradise", "rep": "Retail", "total_value": 612130, "avg_annual_earning": 348256, "visits": 3, "first_purchase": "2024-09-27", "last_purchase": "2026-03-11", "avg_gap_days": 265.0, "days_since_last": 112, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-09", "2026-09-07", "2026-11-06", "2027-01-05", "2027-03-06", "2027-05-05"]}, {"name": "GDK JEWELS PVT LTD", "rep": "Shailendra", "total_value": 283902, "avg_annual_earning": 344503, "visits": 3, "first_purchase": "2025-09-03", "last_purchase": "2026-04-09", "avg_gap_days": 109.0, "days_since_last": 83, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-07", "2026-10-06", "2026-12-05", "2027-02-03", "2027-04-04", "2027-06-03"]}, {"name": "Tarun Jethi A Luxury Jeweller", "rep": "Shailendra", "total_value": 423466, "avg_annual_earning": 344479, "visits": 5, "first_purchase": "2025-04-08", "last_purchase": "2026-03-28", "avg_gap_days": 88.5, "days_since_last": 95, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-26", "2026-09-24", "2026-11-23", "2027-01-22", "2027-03-23", "2027-05-22"]}, {"name": "TALWARSONS JEWELLERS", "rep": "Shailendra", "total_value": 1033433, "avg_annual_earning": 341285, "visits": 12, "first_purchase": "2023-06-21", "last_purchase": "2025-11-20", "avg_gap_days": 80.3, "days_since_last": 223, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-18", "2026-09-16", "2026-11-15", "2027-01-14", "2027-03-15", "2027-05-14"]}, {"name": "P.C.CHANDRA (JEWELLERS) PVT. LTD.(GH NEW)", "rep": "HRK", "total_value": 572781, "avg_annual_earning": 338525, "visits": 3, "first_purchase": "2024-10-21", "last_purchase": "2025-01-20", "avg_gap_days": 45.5, "days_since_last": 527, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-14", "2026-09-12", "2026-11-11", "2027-01-10", "2027-03-11", "2027-05-10"]}, {"name": "RAVEENA  NIRBHAY SANCHETI", "rep": "Retail", "total_value": 361000, "avg_annual_earning": 332129, "visits": 1, "first_purchase": "2025-05-30", "last_purchase": "2025-05-30", "avg_gap_days": 400, "days_since_last": 397, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-24", "2026-09-22", "2026-11-21", "2027-01-20", "2027-03-21", "2027-05-20"]}, {"name": "CHETMANI ORNAMENTS AND JEWELLERS PVT. LTD.", "rep": "Shailendra", "total_value": 445325, "avg_annual_earning": 330599, "visits": 7, "first_purchase": "2025-02-24", "last_purchase": "2026-04-07", "avg_gap_days": 67.8, "days_since_last": 85, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-05", "2026-10-04", "2026-12-03", "2027-02-01", "2027-04-02", "2027-06-01"]}, {"name": "MCS TRADING COMPANY PRIVATE LIMITED", "rep": "HRK", "total_value": 271598, "avg_annual_earning": 328481, "visits": 1, "first_purchase": "2025-09-02", "last_purchase": "2025-09-02", "avg_gap_days": 400, "days_since_last": 302, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-28", "2026-10-27", "2026-12-26", "2027-02-24", "2027-04-25", "2027-06-24"]}, {"name": "Rakyans Fine Jewellery", "rep": "HRK", "total_value": 930200, "avg_annual_earning": 323577, "visits": 2, "first_purchase": "2023-08-16", "last_purchase": "2024-09-05", "avg_gap_days": 386.0, "days_since_last": 664, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-26", "2026-10-25", "2026-12-24", "2027-02-22", "2027-04-23", "2027-06-22"]}, {"name": "VINAY PATNI", "rep": "Retail", "total_value": 618300, "avg_annual_earning": 314095, "visits": 1, "first_purchase": "2024-07-12", "last_purchase": "2024-07-12", "avg_gap_days": 400, "days_since_last": 719, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-02", "2026-08-31", "2026-10-30", "2026-12-29", "2027-02-27", "2027-04-28"]}, {"name": "Alankar JewelArts Pvt. Ltd.", "rep": "HRK", "total_value": 441937, "avg_annual_earning": 311617, "visits": 6, "first_purchase": "2025-01-29", "last_purchase": "2026-05-30", "avg_gap_days": 97.2, "days_since_last": 32, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-29", "2026-09-27", "2026-11-26", "2027-01-25", "2027-03-26", "2027-05-25"]}, {"name": "Birdhi Chand Ghanshyam Das Jewellers", "rep": "HRK", "total_value": 730092, "avg_annual_earning": 309358, "visits": 5, "first_purchase": "2024-02-20", "last_purchase": "2025-09-26", "avg_gap_days": 146.0, "days_since_last": 278, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-23", "2026-09-21", "2026-11-20", "2027-01-19", "2027-03-20", "2027-05-19"]}, {"name": "LALA JUGAL KISHORE JEWELLERS PRIVATE LIMITED", "rep": "Shailendra", "total_value": 515600, "avg_annual_earning": 298925, "visits": 1, "first_purchase": "2024-10-09", "last_purchase": "2024-10-09", "avg_gap_days": 400, "days_since_last": 630, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-31", "2026-09-29", "2026-11-28", "2027-01-27", "2027-03-28", "2027-05-27"]}, {"name": "AARTI JEWELLERS PVT LTD", "rep": "HRK", "total_value": 409300, "avg_annual_earning": 297802, "visits": 2, "first_purchase": "2025-02-14", "last_purchase": "2025-09-22", "avg_gap_days": 220.0, "days_since_last": 282, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-19", "2026-09-17", "2026-11-16", "2027-01-15", "2027-03-16", "2027-05-15"]}, {"name": "LACHMI BOSE", "rep": "Retail", "total_value": 108400, "avg_annual_earning": 297692, "visits": 1, "first_purchase": "2026-02-18", "last_purchase": "2026-02-18", "avg_gap_days": 400, "days_since_last": 133, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-17", "2026-10-16", "2026-12-15", "2027-02-13", "2027-04-14", "2027-06-13"]}, {"name": "L.BAJRANG PRASHAD JEWELLERS", "rep": "HRK", "total_value": 223800, "avg_annual_earning": 287827, "visits": 1, "first_purchase": "2025-09-20", "last_purchase": "2025-09-20", "avg_gap_days": 400, "days_since_last": 284, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-17", "2026-09-15", "2026-11-14", "2027-01-13", "2027-03-14", "2027-05-13"]}, {"name": "RUTVI JAIN", "rep": "Retail", "total_value": 195680, "avg_annual_earning": 279188, "visits": 2, "first_purchase": "2025-10-18", "last_purchase": "2026-02-21", "avg_gap_days": 126.0, "days_since_last": 130, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-20", "2026-10-19", "2026-12-18", "2027-02-16", "2027-04-17", "2027-06-16"]}, {"name": "JAIPUR GEMS-MUMBAI", "rep": "HRK", "total_value": 851543, "avg_annual_earning": 270457, "visits": 6, "first_purchase": "2023-05-08", "last_purchase": "2024-09-30", "avg_gap_days": 102.2, "days_since_last": 639, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-22", "2026-09-20", "2026-11-19", "2027-01-18", "2027-03-19", "2027-05-18"]}, {"name": "PUSHPLATA GOYAL", "rep": "Retail", "total_value": 550500, "avg_annual_earning": 269531, "visits": 1, "first_purchase": "2024-06-15", "last_purchase": "2024-06-15", "avg_gap_days": 400, "days_since_last": 746, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-04", "2026-10-03", "2026-12-02", "2027-01-31", "2027-04-01", "2027-05-31"]}, {"name": "SOLITAIRE DIAMOND BOUTIQUE", "rep": "Shailendra", "total_value": 730930, "avg_annual_earning": 269397, "visits": 16, "first_purchase": "2023-10-14", "last_purchase": "2026-02-26", "avg_gap_days": 57.7, "days_since_last": 125, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-25", "2026-10-24", "2026-12-23", "2027-02-21", "2027-04-22", "2027-06-21"]}, {"name": "DARPAN  JAIN", "rep": "Retail", "total_value": 553300, "avg_annual_earning": 252932, "visits": 1, "first_purchase": "2024-04-23", "last_purchase": "2024-04-23", "avg_gap_days": 400, "days_since_last": 799, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-11", "2026-10-10", "2026-12-09", "2027-02-07", "2027-04-08", "2027-06-07"]}, {"name": "Kays Jewels Pvt.Ltd", "rep": "Shailendra", "total_value": 695100, "avg_annual_earning": 243418, "visits": 4, "first_purchase": "2023-08-23", "last_purchase": "2024-03-15", "avg_gap_days": 68.3, "days_since_last": 838, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-03", "2026-09-01", "2026-10-31", "2026-12-30", "2027-02-28", "2027-04-29"]}, {"name": "Shri Ram Hari Ram Jewellers", "rep": "HRK", "total_value": 626161, "avg_annual_earning": 233135, "visits": 5, "first_purchase": "2023-10-24", "last_purchase": "2025-11-11", "avg_gap_days": 187.2, "days_since_last": 232, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-09", "2026-09-07", "2026-11-06", "2027-01-05", "2027-03-06", "2027-05-05"]}, {"name": "VALENTINE JEWELLERY (I) PVT.LTD(W)", "rep": "Retail", "total_value": 51500, "avg_annual_earning": 223933, "visits": 2, "first_purchase": "2026-04-08", "last_purchase": "2026-04-23", "avg_gap_days": 15.0, "days_since_last": 69, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-21", "2026-10-20", "2026-12-19", "2027-02-17", "2027-04-18", "2027-06-17"]}, {"name": "VARUN  CHORDIA", "rep": "Retail", "total_value": 271000, "avg_annual_earning": 211954, "visits": 1, "first_purchase": "2025-03-21", "last_purchase": "2025-03-21", "avg_gap_days": 400, "days_since_last": 467, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-14", "2026-09-12", "2026-11-11", "2027-01-10", "2027-03-11", "2027-05-10"]}, {"name": "Vijay Jewellers PATIALA", "rep": "Shailendra", "total_value": 374897, "avg_annual_earning": 207471, "visits": 10, "first_purchase": "2024-09-09", "last_purchase": "2026-06-20", "avg_gap_days": 72.1, "days_since_last": 11, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-19", "2026-10-18", "2026-12-17", "2027-02-15", "2027-04-16", "2027-06-15"]}, {"name": "AJB FINE JEWELS", "rep": "HRK", "total_value": 449308, "avg_annual_earning": 204626, "visits": 5, "first_purchase": "2024-04-20", "last_purchase": "2025-03-24", "avg_gap_days": 84.5, "days_since_last": 464, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-17", "2026-09-15", "2026-11-14", "2027-01-13", "2027-03-14", "2027-05-13"]}, {"name": "Bholasons  Jewellers ( Gold Souk )", "rep": "HRK", "total_value": 53562, "avg_annual_earning": 191797, "visits": 5, "first_purchase": "2026-03-21", "last_purchase": "2026-05-25", "avg_gap_days": 16.2, "days_since_last": 37, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-24", "2026-09-22", "2026-11-21", "2027-01-20", "2027-03-21", "2027-05-20"]}, {"name": "PRAYAS GOYAL", "rep": "Retail", "total_value": 374600, "avg_annual_earning": 183408, "visits": 1, "first_purchase": "2024-06-15", "last_purchase": "2024-06-15", "avg_gap_days": 400, "days_since_last": 746, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-04", "2026-10-03", "2026-12-02", "2027-01-31", "2027-04-01", "2027-05-31"]}, {"name": "Regal Jewellers LLP (Bengaluru)", "rep": "Self", "total_value": 142986, "avg_annual_earning": 183247, "visits": 2, "first_purchase": "2025-09-19", "last_purchase": "2025-11-14", "avg_gap_days": 56.0, "days_since_last": 229, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-12", "2026-09-10", "2026-11-09", "2027-01-08", "2027-03-09", "2027-05-08"]}, {"name": "PRAMOD KUMAR AGARWAL", "rep": "Retail", "total_value": 491400, "avg_annual_earning": 180567, "visits": 1, "first_purchase": "2023-10-11", "last_purchase": "2023-10-11", "avg_gap_days": 400, "days_since_last": 994, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-27", "2026-09-25", "2026-11-24", "2027-01-23", "2027-03-24", "2027-05-23"]}, {"name": "DHANDIA EXPORT", "rep": "Retail", "total_value": 171100, "avg_annual_earning": 172161, "visits": 1, "first_purchase": "2025-07-03", "last_purchase": "2025-07-03", "avg_gap_days": 400, "days_since_last": 363, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-27", "2026-10-26", "2026-12-25", "2027-02-23", "2027-04-24", "2027-06-23"]}, {"name": "RADHEY LAL AND SONS JEWELLERS", "rep": "Shailendra", "total_value": 286812, "avg_annual_earning": 169511, "visits": 2, "first_purchase": "2024-10-21", "last_purchase": "2025-03-29", "avg_gap_days": 159.0, "days_since_last": 459, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-22", "2026-09-20", "2026-11-19", "2027-01-18", "2027-03-19", "2027-05-18"]}, {"name": "PUSHPA JI SONKIA", "rep": "Retail", "total_value": 371900, "avg_annual_earning": 164252, "visits": 1, "first_purchase": "2024-03-26", "last_purchase": "2024-03-26", "avg_gap_days": 400, "days_since_last": 827, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-14", "2026-09-12", "2026-11-11", "2027-01-10", "2027-03-11", "2027-05-10"]}, {"name": "MEERA JEWEL HOUSE", "rep": "Shailendra", "total_value": 283603, "avg_annual_earning": 163385, "visits": 5, "first_purchase": "2024-10-05", "last_purchase": "2026-02-02", "avg_gap_days": 121.2, "days_since_last": 149, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-01", "2026-09-30", "2026-11-29", "2027-01-28", "2027-03-29", "2027-05-28"]}, {"name": "KAMAL JEWELLERS", "rep": "Shailendra", "total_value": 339558, "avg_annual_earning": 152738, "visits": 3, "first_purchase": "2024-04-10", "last_purchase": "2025-01-17", "avg_gap_days": 141.0, "days_since_last": 530, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-11", "2026-09-09", "2026-11-08", "2027-01-07", "2027-03-08", "2027-05-07"]}, {"name": "KANHAIYA  ALANKAR MANDIR", "rep": "Shailendra", "total_value": 278300, "avg_annual_earning": 148610, "visits": 1, "first_purchase": "2024-08-16", "last_purchase": "2024-08-16", "avg_gap_days": 400, "days_since_last": 684, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-06", "2026-10-05", "2026-12-04", "2027-02-02", "2027-04-03", "2027-06-02"]}, {"name": "MEHTA GOLD PVT LTD", "rep": "Self", "total_value": 396000, "avg_annual_earning": 148500, "visits": 1, "first_purchase": "2023-10-31", "last_purchase": "2023-10-31", "avg_gap_days": 400, "days_since_last": 974, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-16", "2026-10-15", "2026-12-14", "2027-02-12", "2027-04-13", "2027-06-12"]}, {"name": "TALWAR JEWELLERY HOUSE", "rep": "Shailendra", "total_value": 341200, "avg_annual_earning": 141136, "visits": 4, "first_purchase": "2024-01-30", "last_purchase": "2024-06-08", "avg_gap_days": 43.3, "days_since_last": 753, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-28", "2026-09-26", "2026-11-25", "2027-01-24", "2027-03-25", "2027-05-24"]}, {"name": "GUJRANWALA JEWELS", "rep": "Shailendra", "total_value": 373400, "avg_annual_earning": 139595, "visits": 1, "first_purchase": "2023-10-28", "last_purchase": "2023-10-28", "avg_gap_days": 400, "days_since_last": 977, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-13", "2026-10-12", "2026-12-11", "2027-02-09", "2027-04-10", "2027-06-09"]}, {"name": "SAJAL KHANDELWAL", "rep": "Retail", "total_value": 312997, "avg_annual_earning": 137737, "visits": 1, "first_purchase": "2024-03-23", "last_purchase": "2024-03-23", "avg_gap_days": 400, "days_since_last": 830, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-11", "2026-09-09", "2026-11-08", "2027-01-07", "2027-03-08", "2027-05-07"]}, {"name": "JAIPUR GEMS", "rep": "HRK", "total_value": 398434, "avg_annual_earning": 129014, "visits": 6, "first_purchase": "2023-05-30", "last_purchase": "2024-01-03", "avg_gap_days": 43.6, "days_since_last": 910, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-20", "2026-10-19", "2026-12-18", "2027-02-16", "2027-04-17", "2027-06-16"]}, {"name": "AMAR NATH ACHAL KUMAR", "rep": "Retail", "total_value": 230207, "avg_annual_earning": 127592, "visits": 3, "first_purchase": "2024-09-10", "last_purchase": "2026-01-21", "avg_gap_days": 249.0, "days_since_last": 161, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-20", "2026-09-18", "2026-11-17", "2027-01-16", "2027-03-17", "2027-05-16"]}, {"name": "VEDIKA  SINGHANIA", "rep": "Retail", "total_value": 114800, "avg_annual_earning": 124423, "visits": 1, "first_purchase": "2025-07-29", "last_purchase": "2025-07-29", "avg_gap_days": 400, "days_since_last": 337, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-24", "2026-09-22", "2026-11-21", "2027-01-20", "2027-03-21", "2027-05-20"]}, {"name": "SHALINI  KHANDELWAL", "rep": "Retail", "total_value": 37000, "avg_annual_earning": 122857, "visits": 1, "first_purchase": "2026-03-13", "last_purchase": "2026-03-13", "avg_gap_days": 400, "days_since_last": 110, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-11", "2026-09-09", "2026-11-08", "2027-01-07", "2027-03-08", "2027-05-07"]}, {"name": "RATANDEEP JEWELLERS", "rep": "Shailendra", "total_value": 310500, "avg_annual_earning": 121554, "visits": 1, "first_purchase": "2023-12-11", "last_purchase": "2023-12-11", "avg_gap_days": 400, "days_since_last": 933, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-28", "2026-09-26", "2026-11-25", "2027-01-24", "2027-03-25", "2027-05-24"]}, {"name": "MANAAL", "rep": "Shailendra", "total_value": 122450, "avg_annual_earning": 115568, "visits": 1, "first_purchase": "2025-06-09", "last_purchase": "2025-06-09", "avg_gap_days": 400, "days_since_last": 387, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-03", "2026-10-02", "2026-12-01", "2027-01-30", "2027-03-31", "2027-05-30"]}, {"name": "Shah Virchand Govanji Jewellers Private Limited", "rep": "HRK", "total_value": 202665, "avg_annual_earning": 114765, "visits": 2, "first_purchase": "2024-09-24", "last_purchase": "2024-10-28", "avg_gap_days": 34.0, "days_since_last": 611, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-19", "2026-10-18", "2026-12-17", "2027-02-15", "2027-04-16", "2027-06-15"]}, {"name": "PYARELAL JAGGANNATH SARAF-DELHI", "rep": "HRK", "total_value": 267400, "avg_annual_earning": 110609, "visits": 2, "first_purchase": "2024-01-30", "last_purchase": "2024-08-21", "avg_gap_days": 204.0, "days_since_last": 679, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-11", "2026-10-10", "2026-12-09", "2027-02-07", "2027-04-08", "2027-06-07"]}, {"name": "Jugal Kishore The Jewellers", "rep": "Shailendra", "total_value": 122900, "avg_annual_earning": 109486, "visits": 2, "first_purchase": "2025-05-17", "last_purchase": "2025-12-24", "avg_gap_days": 221.0, "days_since_last": 189, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-21", "2026-10-20", "2026-12-19", "2027-02-17", "2027-04-18", "2027-06-17"]}, {"name": "Panna Diamond World LLP", "rep": "HRK", "total_value": 295704, "avg_annual_earning": 109207, "visits": 3, "first_purchase": "2023-10-16", "last_purchase": "2025-11-12", "avg_gap_days": 379.0, "days_since_last": 231, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-10", "2026-09-08", "2026-11-07", "2027-01-06", "2027-03-07", "2027-05-06"]}, {"name": "PYARE LAL JAGGANNATH SARAF", "rep": "HRK", "total_value": 321428, "avg_annual_earning": 108907, "visits": 2, "first_purchase": "2023-07-19", "last_purchase": "2025-09-01", "avg_gap_days": 775.0, "days_since_last": 303, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-27", "2026-10-26", "2026-12-25", "2027-02-23", "2027-04-24", "2027-06-23"]}, {"name": "NEERAJ JI DASHOT", "rep": "Retail", "total_value": 278100, "avg_annual_earning": 108406, "visits": 1, "first_purchase": "2023-12-07", "last_purchase": "2023-12-07", "avg_gap_days": 400, "days_since_last": 937, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-24", "2026-09-22", "2026-11-21", "2027-01-20", "2027-03-21", "2027-05-20"]}, {"name": "GHATIWALA JEWELLERS", "rep": "Retail", "total_value": 183000, "avg_annual_earning": 106265, "visits": 1, "first_purchase": "2024-10-10", "last_purchase": "2024-10-10", "avg_gap_days": 400, "days_since_last": 629, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-01", "2026-09-30", "2026-11-29", "2027-01-28", "2027-03-29", "2027-05-28"]}, {"name": "Kashi Jewellers", "rep": "Shailendra", "total_value": 193102, "avg_annual_earning": 104181, "visits": 2, "first_purchase": "2024-08-23", "last_purchase": "2025-01-17", "avg_gap_days": 147.0, "days_since_last": 530, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-11", "2026-09-09", "2026-11-08", "2027-01-07", "2027-03-08", "2027-05-07"]}, {"name": "BATUKBHAI JEWELLERS", "rep": "Shailendra", "total_value": 211270, "avg_annual_earning": 94916, "visits": 3, "first_purchase": "2024-04-09", "last_purchase": "2025-09-25", "avg_gap_days": 267.0, "days_since_last": 279, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-22", "2026-09-20", "2026-11-19", "2027-01-18", "2027-03-19", "2027-05-18"]}, {"name": "VERMA JEWELLERS", "rep": "Shailendra", "total_value": 251400, "avg_annual_earning": 93986, "visits": 4, "first_purchase": "2023-10-28", "last_purchase": "2025-08-18", "avg_gap_days": 220.0, "days_since_last": 317, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-13", "2026-10-12", "2026-12-11", "2027-02-09", "2027-04-10", "2027-06-09"]}, {"name": "KIRTI HAJARIMAL SANGHVI", "rep": "Retail", "total_value": 123400, "avg_annual_earning": 93704, "visits": 1, "first_purchase": "2025-03-07", "last_purchase": "2025-03-07", "avg_gap_days": 400, "days_since_last": 481, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-29", "2026-10-28", "2026-12-27", "2027-02-25", "2027-04-26", "2027-06-25"]}, {"name": "OPS JEWELS PRIVATE LIMITED", "rep": "Shailendra", "total_value": 163902, "avg_annual_earning": 91398, "visits": 4, "first_purchase": "2024-09-14", "last_purchase": "2026-04-23", "avg_gap_days": 195.3, "days_since_last": 69, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-21", "2026-10-20", "2026-12-19", "2027-02-17", "2027-04-18", "2027-06-17"]}, {"name": "NAMRATA  BARDIYA", "rep": "Retail", "total_value": 34500, "avg_annual_earning": 88740, "visits": 1, "first_purchase": "2026-02-09", "last_purchase": "2026-02-09", "avg_gap_days": 400, "days_since_last": 142, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-08", "2026-10-07", "2026-12-06", "2027-02-04", "2027-04-05", "2027-06-04"]}, {"name": "AJAY KUMAR GARG HUF", "rep": "Retail", "total_value": 34700, "avg_annual_earning": 87408, "visits": 1, "first_purchase": "2026-02-06", "last_purchase": "2026-02-06", "avg_gap_days": 400, "days_since_last": 145, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-05", "2026-10-04", "2026-12-03", "2027-02-01", "2027-04-02", "2027-06-01"]}, {"name": "GEHNA GEMS & JEWELS PRIVATE LIMITED", "rep": "Shailendra", "total_value": 131193, "avg_annual_earning": 85721, "visits": 4, "first_purchase": "2024-12-19", "last_purchase": "2026-01-24", "avg_gap_days": 133.7, "days_since_last": 158, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-23", "2026-09-21", "2026-11-20", "2027-01-19", "2027-03-20", "2027-05-19"]}, {"name": "MALABAR GOLD LLC", "rep": "Self", "total_value": 131800, "avg_annual_earning": 85658, "visits": 2, "first_purchase": "2024-12-16", "last_purchase": "2025-07-18", "avg_gap_days": 214.0, "days_since_last": 348, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-13", "2026-09-11", "2026-11-10", "2027-01-09", "2027-03-10", "2027-05-09"]}, {"name": "K.D. GEMS", "rep": "Shailendra", "total_value": 149972, "avg_annual_earning": 81393, "visits": 2, "first_purchase": "2024-08-27", "last_purchase": "2024-09-26", "avg_gap_days": 30.0, "days_since_last": 643, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-18", "2026-09-16", "2026-11-15", "2027-01-14", "2027-03-15", "2027-05-14"]}, {"name": "PRET BY KASHI", "rep": "Shailendra", "total_value": 114500, "avg_annual_earning": 80580, "visits": 1, "first_purchase": "2025-01-28", "last_purchase": "2025-01-28", "avg_gap_days": 400, "days_since_last": 519, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-22", "2026-09-20", "2026-11-19", "2027-01-18", "2027-03-19", "2027-05-18"]}, {"name": "SUDHIR KUMAR JUNEJA", "rep": "Retail", "total_value": 70800, "avg_annual_earning": 80061, "visits": 1, "first_purchase": "2025-08-12", "last_purchase": "2025-08-12", "avg_gap_days": 400, "days_since_last": 323, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-07", "2026-10-06", "2026-12-05", "2027-02-03", "2027-04-04", "2027-06-03"]}, {"name": "KIRAN  DEVI  BARDIYA", "rep": "Retail", "total_value": 33100, "avg_annual_earning": 79018, "visits": 1, "first_purchase": "2026-01-29", "last_purchase": "2026-01-29", "avg_gap_days": 400, "days_since_last": 153, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-28", "2026-09-26", "2026-11-25", "2027-01-24", "2027-03-25", "2027-05-24"]}, {"name": "SUNCITY JEWELS", "rep": "Self", "total_value": 111800, "avg_annual_earning": 76185, "visits": 2, "first_purchase": "2025-01-11", "last_purchase": "2025-09-03", "avg_gap_days": 235.0, "days_since_last": 301, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-29", "2026-10-28", "2026-12-27", "2027-02-25", "2027-04-26", "2027-06-25"]}, {"name": "RAKESH AHUJA", "rep": "Retail", "total_value": 211200, "avg_annual_earning": 67667, "visits": 1, "first_purchase": "2023-05-18", "last_purchase": "2023-05-18", "avg_gap_days": 400, "days_since_last": 1140, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-01", "2026-08-30", "2026-10-29", "2026-12-28", "2027-02-26", "2027-04-27"]}, {"name": "HARI PRASAD GOPI KRISHNA SARAF PVT LTD", "rep": "Shailendra", "total_value": 43728, "avg_annual_earning": 65999, "visits": 2, "first_purchase": "2025-11-01", "last_purchase": "2026-06-22", "avg_gap_days": 233.0, "days_since_last": 9, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-21", "2026-10-20", "2026-12-19", "2027-02-17", "2027-04-18", "2027-06-17"]}, {"name": "PACHCHIGAR JEWELLERS", "rep": "Self", "total_value": 177300, "avg_annual_earning": 65545, "visits": 1, "first_purchase": "2023-10-17", "last_purchase": "2023-10-17", "avg_gap_days": 400, "days_since_last": 988, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-02", "2026-10-01", "2026-11-30", "2027-01-29", "2027-03-30", "2027-05-29"]}, {"name": "PRISTINE", "rep": "Self", "total_value": 110124, "avg_annual_earning": 64876, "visits": 8, "first_purchase": "2024-10-19", "last_purchase": "2026-06-20", "avg_gap_days": 87.0, "days_since_last": 11, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-19", "2026-10-18", "2026-12-17", "2027-02-15", "2027-04-16", "2027-06-15"]}, {"name": "Dutta Heritage Private Limited", "rep": "HRK", "total_value": 113296, "avg_annual_earning": 63762, "visits": 3, "first_purchase": "2024-09-20", "last_purchase": "2025-09-06", "avg_gap_days": 175.5, "days_since_last": 298, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-03", "2026-09-01", "2026-10-31", "2026-12-30", "2027-02-28", "2027-04-29"]}, {"name": "NEELKANTH JEWELLERS PVT. LTD.", "rep": "HRK", "total_value": 26623, "avg_annual_earning": 62736, "visits": 6, "first_purchase": "2026-01-27", "last_purchase": "2026-06-03", "avg_gap_days": 25.4, "days_since_last": 28, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-02", "2026-10-01", "2026-11-30", "2027-01-29", "2027-03-30", "2027-05-29"]}, {"name": "DAAS JEWELLERS", "rep": "Shailendra", "total_value": 41070, "avg_annual_earning": 61733, "visits": 2, "first_purchase": "2025-10-31", "last_purchase": "2025-12-18", "avg_gap_days": 48.0, "days_since_last": 195, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-15", "2026-10-14", "2026-12-13", "2027-02-11", "2027-04-12", "2027-06-11"]}, {"name": "MALIK JEWELLERS", "rep": "Shailendra", "total_value": 106808, "avg_annual_earning": 58139, "visits": 3, "first_purchase": "2024-08-29", "last_purchase": "2025-10-08", "avg_gap_days": 202.5, "days_since_last": 266, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-04", "2026-10-03", "2026-12-02", "2027-01-31", "2027-04-01", "2027-05-31"]}, {"name": "AISSHPRA JEWELLERY BOUTIQUE", "rep": "Shailendra", "total_value": 156900, "avg_annual_earning": 57828, "visits": 1, "first_purchase": "2023-10-14", "last_purchase": "2023-10-14", "avg_gap_days": 400, "days_since_last": 991, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-30", "2026-09-28", "2026-11-27", "2027-01-26", "2027-03-27", "2027-05-26"]}, {"name": "Vithal  Trading Co. Ltd.", "rep": "Self", "total_value": 164700, "avg_annual_earning": 56913, "visits": 1, "first_purchase": "2023-08-09", "last_purchase": "2023-08-09", "avg_gap_days": 400, "days_since_last": 1057, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-24", "2026-09-22", "2026-11-21", "2027-01-20", "2027-03-21", "2027-05-20"]}, {"name": "SAKSHI KHANDELWAL", "rep": "Retail", "total_value": 22600, "avg_annual_earning": 54667, "visits": 1, "first_purchase": "2026-01-31", "last_purchase": "2026-01-31", "avg_gap_days": 400, "days_since_last": 151, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-30", "2026-09-28", "2026-11-27", "2027-01-26", "2027-03-27", "2027-05-26"]}, {"name": "Kohinoor Jewellers", "rep": "Shailendra", "total_value": 122300, "avg_annual_earning": 50761, "visits": 1, "first_purchase": "2024-02-02", "last_purchase": "2024-02-02", "avg_gap_days": 400, "days_since_last": 880, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-21", "2026-09-19", "2026-11-18", "2027-01-17", "2027-03-18", "2027-05-17"]}, {"name": "NTS Navrattan Jewellers Pvt Ltd", "rep": "HRK", "total_value": 119500, "avg_annual_earning": 48123, "visits": 3, "first_purchase": "2024-01-06", "last_purchase": "2024-06-20", "avg_gap_days": 83.0, "days_since_last": 741, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-09", "2026-10-08", "2026-12-07", "2027-02-05", "2027-04-06", "2027-06-05"]}, {"name": "ANITA  BHANDARI", "rep": "Retail", "total_value": 122600, "avg_annual_earning": 45740, "visits": 1, "first_purchase": "2023-10-26", "last_purchase": "2023-10-26", "avg_gap_days": 400, "days_since_last": 979, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-11", "2026-10-10", "2026-12-09", "2027-02-07", "2027-04-08", "2027-06-07"]}, {"name": "TEJASWI JEWELLERS JAWAHARLAL MOTILAL SARAF", "rep": "Shailendra", "total_value": 64125, "avg_annual_earning": 43697, "visits": 5, "first_purchase": "2025-01-11", "last_purchase": "2025-04-25", "avg_gap_days": 26.0, "days_since_last": 432, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-18", "2026-10-17", "2026-12-16", "2027-02-14", "2027-04-15", "2027-06-14"]}, {"name": "DIA  AURA", "rep": "Shailendra", "total_value": 78900, "avg_annual_earning": 40704, "visits": 1, "first_purchase": "2024-07-23", "last_purchase": "2024-07-23", "avg_gap_days": 400, "days_since_last": 708, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-13", "2026-09-11", "2026-11-10", "2027-01-09", "2027-03-10", "2027-05-09"]}, {"name": "NOTANDAS JEWELLERS PRIVATE LIMITED", "rep": "HRK", "total_value": 98600, "avg_annual_earning": 40284, "visits": 1, "first_purchase": "2024-01-19", "last_purchase": "2024-01-19", "avg_gap_days": 400, "days_since_last": 894, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-07", "2026-09-05", "2026-11-04", "2027-01-03", "2027-03-04", "2027-05-03"]}, {"name": "RAJA RAM ANIL KUMAR SARRAF LLP", "rep": "Shailendra", "total_value": 107800, "avg_annual_earning": 40137, "visits": 1, "first_purchase": "2023-10-24", "last_purchase": "2023-10-24", "avg_gap_days": 400, "days_since_last": 981, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-09", "2026-10-08", "2026-12-07", "2027-02-05", "2027-04-06", "2027-06-05"]}, {"name": "L. KASHI NATH SETH JEWELLERS", "rep": "Shailendra", "total_value": 74400, "avg_annual_earning": 40081, "visits": 1, "first_purchase": "2024-08-22", "last_purchase": "2024-08-22", "avg_gap_days": 400, "days_since_last": 678, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-12", "2026-10-11", "2026-12-10", "2027-02-08", "2027-04-09", "2027-06-08"]}, {"name": "STYLE GALLERY LLC", "rep": "HRK", "total_value": 57345, "avg_annual_earning": 38859, "visits": 1, "first_purchase": "2025-01-08", "last_purchase": "2025-01-08", "avg_gap_days": 400, "days_since_last": 539, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-02", "2026-08-31", "2026-10-30", "2026-12-29", "2027-02-27", "2027-04-28"]}, {"name": "GARY S FINE JEWELRY LLC", "rep": "Self", "total_value": 47772, "avg_annual_earning": 35537, "visits": 1, "first_purchase": "2025-02-25", "last_purchase": "2025-02-25", "avg_gap_days": 400, "days_since_last": 491, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-19", "2026-10-18", "2026-12-17", "2027-02-15", "2027-04-16", "2027-06-15"]}, {"name": "Birdhi Chand Ghanshyam Das", "rep": "Self", "total_value": 75728, "avg_annual_earning": 34190, "visits": 2, "first_purchase": "2024-04-13", "last_purchase": "2026-01-24", "avg_gap_days": 651.0, "days_since_last": 158, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-23", "2026-09-21", "2026-11-20", "2027-01-19", "2027-03-20", "2027-05-19"]}, {"name": "SHRENIK LUNAWAT", "rep": "Retail", "total_value": 59200, "avg_annual_earning": 30978, "visits": 1, "first_purchase": "2024-08-02", "last_purchase": "2024-08-02", "avg_gap_days": 400, "days_since_last": 698, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-23", "2026-09-21", "2026-11-20", "2027-01-19", "2027-03-20", "2027-05-19"]}, {"name": "BOTHRA & BAGMAR JEWELLERS PVT LTD", "rep": "Shailendra", "total_value": 86000, "avg_annual_earning": 30526, "visits": 1, "first_purchase": "2023-09-06", "last_purchase": "2023-09-06", "avg_gap_days": 400, "days_since_last": 1029, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-21", "2026-10-20", "2026-12-19", "2027-02-17", "2027-04-18", "2027-06-17"]}, {"name": "VALENTINE JADAU", "rep": "Retail", "total_value": 69600, "avg_annual_earning": 29837, "visits": 3, "first_purchase": "2024-03-01", "last_purchase": "2025-12-08", "avg_gap_days": 323.5, "days_since_last": 205, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-05", "2026-10-04", "2026-12-03", "2027-02-01", "2027-04-02", "2027-06-01"]}, {"name": "KINJAL SHRENIK JAIN", "rep": "Retail", "total_value": 26600, "avg_annual_earning": 29621, "visits": 1, "first_purchase": "2025-08-07", "last_purchase": "2025-08-07", "avg_gap_days": 400, "days_since_last": 328, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-02", "2026-10-01", "2026-11-30", "2027-01-29", "2027-03-30", "2027-05-29"]}, {"name": "RAMKUMAR JEWELLERS ( PVT ) LTD.", "rep": "Shailendra", "total_value": 86500, "avg_annual_earning": 28515, "visits": 1, "first_purchase": "2023-06-19", "last_purchase": "2023-06-19", "avg_gap_days": 400, "days_since_last": 1108, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-02", "2026-10-01", "2026-11-30", "2027-01-29", "2027-03-30", "2027-05-29"]}, {"name": "K D DIAMOND", "rep": "Shailendra", "total_value": 68258, "avg_annual_earning": 27701, "visits": 2, "first_purchase": "2024-01-13", "last_purchase": "2024-07-31", "avg_gap_days": 200.0, "days_since_last": 700, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-21", "2026-09-19", "2026-11-18", "2027-01-17", "2027-03-18", "2027-05-17"]}, {"name": "ALANKAR JEWELLERS (BR)", "rep": "HRK", "total_value": 11700, "avg_annual_earning": 25900, "visits": 1, "first_purchase": "2026-01-17", "last_purchase": "2026-01-17", "avg_gap_days": 400, "days_since_last": 165, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-16", "2026-09-14", "2026-11-13", "2027-01-12", "2027-03-13", "2027-05-12"]}, {"name": "SHAILENDRA GOYAL", "rep": "Retail", "total_value": 72100, "avg_annual_earning": 24612, "visits": 1, "first_purchase": "2023-07-27", "last_purchase": "2023-07-27", "avg_gap_days": 400, "days_since_last": 1070, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-11", "2026-09-09", "2026-11-08", "2027-01-07", "2027-03-08", "2027-05-07"]}, {"name": "GEM PLAZA PRIVAT LIMITED", "rep": "Self", "total_value": 31640, "avg_annual_earning": 23584, "visits": 2, "first_purchase": "2025-02-26", "last_purchase": "2026-01-19", "avg_gap_days": 327.0, "days_since_last": 163, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-18", "2026-09-16", "2026-11-15", "2027-01-14", "2027-03-15", "2027-05-14"]}, {"name": "PANJAB JEWELS AND GEMS LLP", "rep": "HRK", "total_value": 6210, "avg_annual_earning": 23145, "visits": 1, "first_purchase": "2026-03-25", "last_purchase": "2026-03-25", "avg_gap_days": 400, "days_since_last": 98, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-23", "2026-09-21", "2026-11-20", "2027-01-19", "2027-03-20", "2027-05-19"]}, {"name": "SHRUTI  SHITALKUMAR  DOSHI", "rep": "Retail", "total_value": 40000, "avg_annual_earning": 23117, "visits": 1, "first_purchase": "2024-10-07", "last_purchase": "2024-10-07", "avg_gap_days": 400, "days_since_last": 632, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-29", "2026-09-27", "2026-11-26", "2027-01-25", "2027-03-26", "2027-05-25"]}, {"name": "PRIYANKI  L  GUPTA", "rep": "Retail", "total_value": 37000, "avg_annual_earning": 21903, "visits": 1, "first_purchase": "2024-10-22", "last_purchase": "2024-10-22", "avg_gap_days": 400, "days_since_last": 617, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-13", "2026-10-12", "2026-12-11", "2027-02-09", "2027-04-10", "2027-06-09"]}, {"name": "Atul Jewellers", "rep": "HRK", "total_value": 45400, "avg_annual_earning": 21733, "visits": 1, "first_purchase": "2024-05-29", "last_purchase": "2024-05-29", "avg_gap_days": 400, "days_since_last": 763, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-18", "2026-09-16", "2026-11-15", "2027-01-14", "2027-03-15", "2027-05-14"]}, {"name": "ANITA JI JAIN", "rep": "Retail", "total_value": 52100, "avg_annual_earning": 20958, "visits": 1, "first_purchase": "2024-01-05", "last_purchase": "2024-01-05", "avg_gap_days": 400, "days_since_last": 908, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-22", "2026-10-21", "2026-12-20", "2027-02-18", "2027-04-19", "2027-06-18"]}, {"name": "J.P.KOTHARI", "rep": "HRK", "total_value": 37252, "avg_annual_earning": 20837, "visits": 1, "first_purchase": "2024-09-16", "last_purchase": "2024-09-16", "avg_gap_days": 400, "days_since_last": 653, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-08", "2026-09-06", "2026-11-05", "2027-01-04", "2027-03-05", "2027-05-04"]}, {"name": "MANISHA  RAKHECHA", "rep": "Retail", "total_value": 52600, "avg_annual_earning": 19367, "visits": 1, "first_purchase": "2023-10-13", "last_purchase": "2023-10-13", "avg_gap_days": 400, "days_since_last": 992, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-29", "2026-09-27", "2026-11-26", "2027-01-25", "2027-03-26", "2027-05-25"]}, {"name": "NS JEWELLS", "rep": "HRK", "total_value": 17800, "avg_annual_earning": 18366, "visits": 1, "first_purchase": "2025-07-12", "last_purchase": "2025-07-12", "avg_gap_days": 400, "days_since_last": 354, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-07", "2026-09-05", "2026-11-04", "2027-01-03", "2027-03-04", "2027-05-03"]}, {"name": "BOTHRA & BAGMAR JEWELLERS", "rep": "HRK", "total_value": 12000, "avg_annual_earning": 17963, "visits": 1, "first_purchase": "2025-10-30", "last_purchase": "2025-10-30", "avg_gap_days": 400, "days_since_last": 244, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-26", "2026-10-25", "2026-12-24", "2027-02-22", "2027-04-23", "2027-06-22"]}, {"name": "HARSHIT GARG", "rep": "Retail", "total_value": 24300, "avg_annual_earning": 17894, "visits": 1, "first_purchase": "2025-02-20", "last_purchase": "2025-02-20", "avg_gap_days": 400, "days_since_last": 496, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-14", "2026-10-13", "2026-12-12", "2027-02-10", "2027-04-11", "2027-06-10"]}, {"name": "ABARAN TIMELESS JEWELLERY PVT. LTD.", "rep": "HRK", "total_value": 21718, "avg_annual_earning": 16770, "visits": 1, "first_purchase": "2025-03-15", "last_purchase": "2025-03-15", "avg_gap_days": 400, "days_since_last": 473, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-08", "2026-09-06", "2026-11-05", "2027-01-04", "2027-03-05", "2027-05-04"]}, {"name": "RAJ JEWELLERS", "rep": "Shailendra", "total_value": 32700, "avg_annual_earning": 16272, "visits": 1, "first_purchase": "2024-06-27", "last_purchase": "2024-06-27", "avg_gap_days": 400, "days_since_last": 734, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-16", "2026-10-15", "2026-12-14", "2027-02-12", "2027-04-13", "2027-06-12"]}, {"name": "Javanmal Prakashchand Kothari", "rep": "HRK", "total_value": 27000, "avg_annual_earning": 16061, "visits": 1, "first_purchase": "2024-10-25", "last_purchase": "2024-10-25", "avg_gap_days": 400, "days_since_last": 614, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-16", "2026-10-15", "2026-12-14", "2027-02-12", "2027-04-13", "2027-06-12"]}, {"name": "Sangeeta Jain", "rep": "Retail", "total_value": 5300, "avg_annual_earning": 15243, "visits": 1, "first_purchase": "2026-02-24", "last_purchase": "2026-02-24", "avg_gap_days": 400, "days_since_last": 127, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-23", "2026-10-22", "2026-12-21", "2027-02-19", "2027-04-20", "2027-06-19"]}, {"name": "JAI  ATUL  MUNIM", "rep": "Retail", "total_value": 20400, "avg_annual_earning": 14139, "visits": 1, "first_purchase": "2025-01-20", "last_purchase": "2025-01-20", "avg_gap_days": 400, "days_since_last": 527, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-14", "2026-09-12", "2026-11-11", "2027-01-10", "2027-03-11", "2027-05-10"]}, {"name": "Narayan Das Saraf Jewellers Pvt Ltd", "rep": "Shailendra", "total_value": 28800, "avg_annual_earning": 12063, "visits": 2, "first_purchase": "2024-02-10", "last_purchase": "2024-07-02", "avg_gap_days": 143.0, "days_since_last": 729, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-21", "2026-10-20", "2026-12-19", "2027-02-17", "2027-04-18", "2027-06-17"]}, {"name": "SUPRIYA PANJABI", "rep": "Retail", "total_value": 39000, "avg_annual_earning": 12031, "visits": 1, "first_purchase": "2023-04-04", "last_purchase": "2023-04-04", "avg_gap_days": 400, "days_since_last": 1184, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-17", "2026-09-15", "2026-11-14", "2027-01-13", "2027-03-14", "2027-05-13"]}, {"name": "KAMNA JEWELLERS", "rep": "HRK", "total_value": 20000, "avg_annual_earning": 11878, "visits": 1, "first_purchase": "2024-10-24", "last_purchase": "2024-10-24", "avg_gap_days": 400, "days_since_last": 615, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-15", "2026-10-14", "2026-12-13", "2027-02-11", "2027-04-12", "2027-06-11"]}, {"name": "JYOTI AHUJA", "rep": "Retail", "total_value": 35100, "avg_annual_earning": 11285, "visits": 1, "first_purchase": "2023-05-22", "last_purchase": "2023-05-22", "avg_gap_days": 400, "days_since_last": 1136, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-05", "2026-09-03", "2026-11-02", "2027-01-01", "2027-03-02", "2027-05-01"]}, {"name": "SHREYA  SIDDHARTH  DOSHI", "rep": "Retail", "total_value": 21500, "avg_annual_earning": 9439, "visits": 1, "first_purchase": "2024-03-21", "last_purchase": "2024-03-21", "avg_gap_days": 400, "days_since_last": 832, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-09", "2026-09-07", "2026-11-06", "2027-01-05", "2027-03-06", "2027-05-05"]}, {"name": "STARFIRE GEMS PVT. LTD.(MUMBAI)", "rep": "HRK", "total_value": 13710, "avg_annual_earning": 9056, "visits": 1, "first_purchase": "2024-12-25", "last_purchase": "2024-12-25", "avg_gap_days": 400, "days_since_last": 553, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-17", "2026-10-16", "2026-12-15", "2027-02-13", "2027-04-14", "2027-06-13"]}, {"name": "K N JEWELLERS", "rep": "Shailendra", "total_value": 18703, "avg_annual_earning": 8826, "visits": 1, "first_purchase": "2024-05-18", "last_purchase": "2024-05-18", "avg_gap_days": 400, "days_since_last": 774, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-07", "2026-09-05", "2026-11-04", "2027-01-03", "2027-03-04", "2027-05-03"]}, {"name": "RATTAN LAL JEWELLERS", "rep": "Shailendra", "total_value": 18500, "avg_annual_earning": 7558, "visits": 2, "first_purchase": "2024-01-19", "last_purchase": "2024-09-12", "avg_gap_days": 237.0, "days_since_last": 657, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-04", "2026-09-02", "2026-11-01", "2026-12-31", "2027-03-01", "2027-04-30"]}, {"name": "RAJ GOVIND SHARMA", "rep": "Retail", "total_value": 11000, "avg_annual_earning": 6522, "visits": 1, "first_purchase": "2024-10-23", "last_purchase": "2024-10-23", "avg_gap_days": 400, "days_since_last": 616, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-14", "2026-10-13", "2026-12-12", "2027-02-10", "2027-04-11", "2027-06-10"]}, {"name": "GAURAV JI JAIN", "rep": "Retail", "total_value": 10818, "avg_annual_earning": 6032, "visits": 1, "first_purchase": "2024-09-14", "last_purchase": "2024-09-14", "avg_gap_days": 400, "days_since_last": 655, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-06", "2026-09-04", "2026-11-03", "2027-01-02", "2027-03-03", "2027-05-02"]}, {"name": "Amyra Jewels", "rep": "Self", "total_value": 13682, "avg_annual_earning": 5397, "visits": 1, "first_purchase": "2023-12-18", "last_purchase": "2023-12-18", "avg_gap_days": 400, "days_since_last": 926, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-04", "2026-10-03", "2026-12-02", "2027-01-31", "2027-04-01", "2027-05-31"]}, {"name": "PETER  RODRIGUES", "rep": "Self", "total_value": 6180, "avg_annual_earning": 4341, "visits": 1, "first_purchase": "2025-01-27", "last_purchase": "2025-01-27", "avg_gap_days": 400, "days_since_last": 520, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-21", "2026-09-19", "2026-11-18", "2027-01-17", "2027-03-18", "2027-05-17"]}, {"name": "JODHAMAL KAILASH CHAND JAIN JEWELLERS PVT. LTD", "rep": "Shailendra", "total_value": 4590, "avg_annual_earning": 2726, "visits": 2, "first_purchase": "2024-10-24", "last_purchase": "2024-10-26", "avg_gap_days": 2.0, "days_since_last": 613, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-17", "2026-10-16", "2026-12-15", "2027-02-13", "2027-04-14", "2027-06-13"]}, {"name": "RATLAM ABHUSHAN PRIVATE LIMITED", "rep": "HRK", "total_value": 2700, "avg_annual_earning": 2201, "visits": 1, "first_purchase": "2025-04-09", "last_purchase": "2025-04-09", "avg_gap_days": 400, "days_since_last": 448, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-02", "2026-10-01", "2026-11-30", "2027-01-29", "2027-03-30", "2027-05-29"]}, {"name": "KAPOOR JEWELLERS", "rep": "Shailendra", "total_value": 5200, "avg_annual_earning": 2151, "visits": 1, "first_purchase": "2024-01-30", "last_purchase": "2024-01-30", "avg_gap_days": 400, "days_since_last": 883, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-18", "2026-09-16", "2026-11-15", "2027-01-14", "2027-03-15", "2027-05-14"]}, {"name": "SATWIKA JHA", "rep": "Retail", "total_value": 1300, "avg_annual_earning": 927, "visits": 1, "first_purchase": "2025-02-04", "last_purchase": "2025-02-04", "avg_gap_days": 400, "days_since_last": 512, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-29", "2026-09-27", "2026-11-26", "2027-01-25", "2027-03-26", "2027-05-25"]}, {"name": "MARIA D DESIGNS", "rep": "Self", "total_value": 400, "avg_annual_earning": 217, "visits": 1, "first_purchase": "2024-08-28", "last_purchase": "2024-08-28", "avg_gap_days": 400, "days_since_last": 672, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-18", "2026-10-17", "2026-12-16", "2027-02-14", "2027-04-15", "2027-06-14"]}, {"name": "MANAS KHANDELWAL", "rep": "Retail", "total_value": 100, "avg_annual_earning": 76, "visits": 1, "first_purchase": "2025-03-10", "last_purchase": "2025-03-10", "avg_gap_days": 400, "days_since_last": 478, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-03", "2026-09-01", "2026-10-31", "2026-12-30", "2027-02-28", "2027-04-29"]}, {"name": "ShopLC Global Inc.", "rep": "Self", "total_value": 125, "avg_annual_earning": 65, "visits": 1, "first_purchase": "2024-08-02", "last_purchase": "2024-08-02", "avg_gap_days": 400, "days_since_last": 698, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-23", "2026-09-21", "2026-11-20", "2027-01-19", "2027-03-20", "2027-05-19"]}, {"name": "SS JEWELLERS", "rep": "Shailendra", "total_value": -256, "avg_annual_earning": -108, "visits": 1, "first_purchase": "2024-02-19", "last_purchase": "2024-02-19", "avg_gap_days": 400, "days_since_last": 863, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-07", "2026-10-06", "2026-12-05", "2027-02-03", "2027-04-04", "2027-06-03"]}, {"name": "KRISHNA KRISHNA JEWELLERS PVT.LTD", "rep": "Shailendra", "total_value": -2302, "avg_annual_earning": -869, "visits": 1, "first_purchase": "2023-11-07", "last_purchase": "2023-11-07", "avg_gap_days": 400, "days_since_last": 967, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-23", "2026-10-22", "2026-12-21", "2027-02-19", "2027-04-20", "2027-06-19"]}, {"name": "JAIN SONS JEWELLERS", "rep": "Shailendra", "total_value": -563, "avg_annual_earning": -887, "visits": 1, "first_purchase": "2025-11-11", "last_purchase": "2025-11-11", "avg_gap_days": 400, "days_since_last": 232, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-09", "2026-09-07", "2026-11-06", "2027-01-05", "2027-03-06", "2027-05-05"]}, {"name": "Shikha Pandey Mumbai", "rep": "Retail", "total_value": -1533, "avg_annual_earning": -1118, "visits": 1, "first_purchase": "2025-02-15", "last_purchase": "2025-02-15", "avg_gap_days": 400, "days_since_last": 501, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-09", "2026-10-08", "2026-12-07", "2027-02-05", "2027-04-06", "2027-06-05"]}, {"name": "FORTOFINO (Jammu)", "rep": "Self", "total_value": -1700, "avg_annual_earning": -1140, "visits": 1, "first_purchase": "2025-01-02", "last_purchase": "2025-01-02", "avg_gap_days": 400, "days_since_last": 545, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-25", "2026-10-24", "2026-12-23", "2027-02-21", "2027-04-22", "2027-06-21"]}, {"name": "J.D. SOLITAIRE", "rep": "Shailendra", "total_value": -2564, "avg_annual_earning": -1521, "visits": 1, "first_purchase": "2024-10-23", "last_purchase": "2024-10-23", "avg_gap_days": 400, "days_since_last": 616, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-14", "2026-10-13", "2026-12-12", "2027-02-10", "2027-04-11", "2027-06-10"]}, {"name": "VIJAY JI CHORDIA", "rep": "Retail", "total_value": -6790, "avg_annual_earning": -2183, "visits": 1, "first_purchase": "2023-05-22", "last_purchase": "2023-05-22", "avg_gap_days": 400, "days_since_last": 1136, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-05", "2026-09-03", "2026-11-02", "2027-01-01", "2027-03-02", "2027-05-01"]}, {"name": "AARUSH GEMS PVT LTD", "rep": "HRK", "total_value": -6476, "avg_annual_earning": -3290, "visits": 2, "first_purchase": "2024-07-12", "last_purchase": "2025-02-25", "avg_gap_days": 228.0, "days_since_last": 491, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-19", "2026-10-18", "2026-12-17", "2027-02-15", "2027-04-16", "2027-06-15"]}, {"name": "SHVETA  BHATHEJA", "rep": "Retail", "total_value": -3019, "avg_annual_earning": -3425, "visits": 1, "first_purchase": "2025-08-13", "last_purchase": "2025-08-13", "avg_gap_days": 400, "days_since_last": 322, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-08", "2026-10-07", "2026-12-06", "2027-02-04", "2027-04-05", "2027-06-04"]}, {"name": "ARADHANA  BARTHWAL", "rep": "Retail", "total_value": -4279, "avg_annual_earning": -4306, "visits": 1, "first_purchase": "2025-07-03", "last_purchase": "2025-07-03", "avg_gap_days": 400, "days_since_last": 363, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-27", "2026-10-26", "2026-12-25", "2027-02-23", "2027-04-24", "2027-06-23"]}, {"name": "JOYDEEP BHATTACHARYA", "rep": "Retail", "total_value": -3974, "avg_annual_earning": -4760, "visits": 1, "first_purchase": "2025-08-30", "last_purchase": "2025-08-30", "avg_gap_days": 400, "days_since_last": 305, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-25", "2026-10-24", "2026-12-23", "2027-02-21", "2027-04-22", "2027-06-21"]}, {"name": "SRI KRISHNA DIAMONDS AND JEWELLERY", "rep": "HRK", "total_value": -8469, "avg_annual_earning": -14124, "visits": 1, "first_purchase": "2025-11-24", "last_purchase": "2025-11-24", "avg_gap_days": 400, "days_since_last": 219, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-07-22", "2026-09-20", "2026-11-19", "2027-01-18", "2027-03-19", "2027-05-18"]}, {"name": "CARLOS CASTELLANO E HIJOS SL", "rep": "Self", "total_value": -72900, "avg_annual_earning": -188842, "visits": 1, "first_purchase": "2026-02-10", "last_purchase": "2026-02-10", "avg_gap_days": 400, "days_since_last": 141, "tier": "Low", "cadence_days": 60, "next_appointments": ["2026-08-09", "2026-10-08", "2026-12-07", "2027-02-05", "2027-04-06", "2027-06-05"]}]}
+</script>
+
+<script>
+(function(){
+  "use strict";
+
+  var DB = JSON.parse(document.getElementById('dataStore').textContent);
+  var AS_OF = new Date(DB.as_of + 'T00:00:00');
+  var CADENCE_MAP = {High: 15, Medium: 30, Low: 60};
+
+  var CREDS = {
+    'hrk':        {password:'valentine@123', role:'rep', rep:'HRK'},
+    'retail':     {password:'valentine@123', role:'rep', rep:'Retail'},
+    'shailendra': {password:'valentine@123', role:'rep', rep:'Shailendra'},
+    'self':       {password:'valentine@123', role:'rep', rep:'Self'},
+    'admin':      {password:'admin@123',     role:'admin'}
+  };
+
+  var state = {
+    user: null,               // {role, rep, label}
+    repFilter: 'ALL',         // admin only
+    priorityFilter: 'ALL',    // ALL | High | Medium | Low
+    viewMonth: new Date(AS_OF.getFullYear(), AS_OF.getMonth(), 1),
+    view: 'calendar',
+    overrides: {},            // client name -> {anchorIndex, anchorDate} — reschedule shifts this + later occurrences
+    notes: {},                // key `${client}||${idx}` -> note text
+    priorityOverrides: {},    // client name -> 'High'|'Medium'|'Low' (admin manual override)
+    closedDays: {},           // client name -> array of ISO dates that must never get a scheduled visit
+    visitLog: {},              // key `${client}||${idx}` -> {visited: bool, called: bool}
+    manualReminders: {},      // id -> {id, title, priority, frequencyDays, startDate, rep}
+    selectedClient: null
+  };
+  var reminderIdSeq = 1;
+
+  function todayISO(d){
+    return d.toISOString().slice(0,10);
+  }
+  function fmtMoney(n){
+    return '₹' + Number(n).toLocaleString('en-IN');
+  }
+  function fmtDateLong(iso){
+    var d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString('en-IN', {day:'numeric', month:'long', year:'numeric'});
+  }
+  function fmtDateShort(iso){
+    var d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString('en-IN', {day:'numeric', month:'short'});
+  }
+  function daysActiveOf(firstPurchaseIso){
+    var first = new Date(firstPurchaseIso + 'T00:00:00');
+    return Math.max(Math.round((AS_OF - first) / 86400000), 1);
+  }
+  function historyLabel(firstPurchaseIso){
+    var d = daysActiveOf(firstPurchaseIso);
+    if(d < 365) return d + ' day' + (d===1?'':'s') + ' of history';
+    return (d/365.25).toFixed(1) + ' yrs of history';
+  }
+  function addDaysISO(iso, days){
+    var d = new Date(iso + 'T00:00:00');
+    d.setDate(d.getDate() + days);
+    return d.toISOString().slice(0,10);
+  }
+  function noteKey(client, idx){ return client + '||' + idx; }
+
+  function getVisitLog(client, idx){
+    return state.visitLog[noteKey(client, idx)] || {visited: false, called: false};
+  }
+  function setVisitLog(client, idx, patch){
+    var key = noteKey(client, idx);
+    state.visitLog[key] = Object.assign({visited:false, called:false}, state.visitLog[key], patch);
+  }
+  // Most recent date (across a client's tracked occurrences) marked visited/called.
+  function lastActionDate(client, field){
+    var occs = occurrencesFor(client);
+    var dates = occs.filter(function(o){ return o[field]; }).map(function(o){ return o.date; });
+    if(!dates.length) return null;
+    return dates.sort().slice(-1)[0];
+  }
+
+  function effectiveTier(client){
+    return state.priorityOverrides[client.name] || client.tier;
+  }
+  function effectiveCadence(client){
+    return CADENCE_MAP[effectiveTier(client)];
+  }
+
+  // Recompute the 6-visit base schedule from last purchase using whatever
+  // cadence currently applies (original tier, or an admin override) — so
+  // changing a client's priority immediately reshapes their visit schedule.
+  function isClosedDay(clientName, iso){
+    var set = state.closedDays[clientName];
+    return !!set && set.indexOf(iso) !== -1;
+  }
+  // Push a candidate visit date forward, one day at a time, until it lands
+  // on a day that isn't marked closed for this client.
+  function skipClosedDaysDate(clientName, dateObj){
+    var d = new Date(dateObj.getTime());
+    var guard = 0;
+    while(isClosedDay(clientName, d.toISOString().slice(0,10)) && guard < 400){
+      d.setDate(d.getDate() + 1);
+      guard++;
+    }
+    return d;
+  }
+
+  function computeBaseChain(client){
+    var cadence = effectiveCadence(client);
+    var nxt = new Date(client.last_purchase + 'T00:00:00');
+    nxt.setDate(nxt.getDate() + cadence);
+    while(nxt < AS_OF){
+      nxt.setDate(nxt.getDate() + cadence);
+    }
+    var out = [];
+    var cur = new Date(nxt.getTime());
+    for(var i=0;i<6;i++){
+      cur = skipClosedDaysDate(client.name, cur);
+      out.push(cur.toISOString().slice(0,10));
+      cur = new Date(cur.getTime());
+      cur.setDate(cur.getDate() + cadence);
+    }
+    return out;
+  }
+
+  // Build a flat list of scheduled occurrences for a client.
+  // A reschedule sets an "anchor" (index + new date); that occurrence and every
+  // later one in the chain are recomputed forward from the anchor using the
+  // client's current cadence, so moving the next visit shifts the whole future
+  // schedule. Changing a client's priority also reshapes the base chain.
+  function occurrencesFor(client){
+    var out = [];
+    var tier = effectiveTier(client);
+    var cadence = effectiveCadence(client);
+    var baseChain = computeBaseChain(client);
+    var anchor = state.overrides[client.name];
+    var runningDate = null;
+    baseChain.forEach(function(origDate, idx){
+      var date = origDate;
+      var rescheduled = false;
+      if(anchor && idx >= anchor.anchorIndex){
+        if(runningDate === null){
+          runningDate = new Date(anchor.anchorDate + 'T00:00:00');
+        } else {
+          runningDate = new Date(runningDate.getTime());
+          runningDate.setDate(runningDate.getDate() + cadence);
+        }
+        runningDate = skipClosedDaysDate(client.name, runningDate);
+        date = runningDate.toISOString().slice(0,10);
+        rescheduled = true;
+      }
+      out.push({
+        client: client.name,
+        rep: client.rep,
+        tier: tier,
+        total_value: client.total_value,
+        avg_annual_earning: client.avg_annual_earning,
+        visits: client.visits,
+        first_purchase: client.first_purchase,
+        last_purchase: client.last_purchase,
+        avg_gap_days: client.avg_gap_days,
+        idx: idx,
+        origDate: origDate,
+        date: date,
+        note: state.notes[noteKey(client.name, idx)] || '',
+        visited: getVisitLog(client.name, idx).visited,
+        called: getVisitLog(client.name, idx).called,
+        rescheduled: rescheduled
+      });
+    });
+    return out;
+  }
+
+  function visibleClients(){
+    var list;
+    if(state.user.role === 'rep'){
+      list = DB.clients.filter(function(c){ return c.rep === state.user.rep; });
+    } else if(state.repFilter === 'ALL'){
+      list = DB.clients;
+    } else {
+      list = DB.clients.filter(function(c){ return c.rep === state.repFilter; });
+    }
+    if(state.priorityFilter !== 'ALL'){
+      list = list.filter(function(c){ return effectiveTier(c) === state.priorityFilter; });
+    }
+    return list;
+  }
+
+  function visibleReminders(){
+    var list = Object.keys(state.manualReminders).map(function(k){ return state.manualReminders[k]; });
+    if(state.user.role === 'rep'){
+      list = list.filter(function(r){ return r.rep === state.user.rep; });
+    } else if(state.repFilter !== 'ALL'){
+      list = list.filter(function(r){ return r.rep === state.repFilter; });
+    }
+    // Note: reminders are intentionally NOT filtered by the priority filter bar,
+    // so a reminder never disappears from view just because its priority tag
+    // doesn't match the currently selected client-priority filter.
+    return list;
+  }
+
+  function reminderOccurrences(r){
+    var out = [];
+    var cur = new Date(r.startDate + 'T00:00:00');
+    var cycles = r.frequencyDays ? 6 : 1;
+    for(var i=0;i<cycles;i++){
+      out.push({
+        isReminder: true,
+        id: r.id,
+        client: r.title,
+        rep: r.rep,
+        tier: r.priority,
+        date: cur.toISOString().slice(0,10),
+        frequencyDays: r.frequencyDays
+      });
+      if(!r.frequencyDays) break;
+      cur = new Date(cur.getTime() + r.frequencyDays*86400000);
+    }
+    return out;
+  }
+
+  function allOccurrences(){
+    var list = [];
+    visibleClients().forEach(function(c){
+      occurrencesFor(c).forEach(function(o){ list.push(o); });
+    });
+    visibleReminders().forEach(function(r){
+      reminderOccurrences(r).forEach(function(o){ list.push(o); });
+    });
+    return list;
+  }
+
+  function occByDateMap(){
+    var map = {};
+    allOccurrences().forEach(function(o){
+      (map[o.date] = map[o.date] || []).push(o);
+    });
+    return map;
+  }
+
+  // ---------------- LOGIN ----------------
+  var loginForm = document.getElementById('loginForm');
+  loginForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    var u = document.getElementById('username').value.trim().toLowerCase();
+    var p = document.getElementById('password').value;
+    var errBox = document.getElementById('loginError');
+    var cred = CREDS[u];
+    if(!cred || cred.password !== p){
+      errBox.textContent = 'Incorrect username or password.';
+      errBox.classList.remove('hidden');
+      return;
+    }
+    errBox.classList.add('hidden');
+    state.user = {
+      role: cred.role,
+      rep: cred.rep || null,
+      label: cred.role === 'admin' ? 'Admin (Master Calendar)' : (cred.rep + ' — Sales Rep')
+    };
+    enterApp();
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', function(){
+    state.user = null;
+    document.getElementById('username').value = '';
+    document.getElementById('password').value = '';
+    document.getElementById('appScreen').classList.add('hidden');
+    document.getElementById('loginScreen').classList.remove('hidden');
+  });
+
+  function enterApp(){
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('appScreen').classList.remove('hidden');
+    document.getElementById('userChipLabel').textContent = state.user.label;
+
+    var adminPanel = document.getElementById('adminFilterPanel');
+    var repColHeader = document.getElementById('repColHeader');
+    if(state.user.role === 'admin'){
+      adminPanel.classList.remove('hidden');
+      var sel = document.getElementById('repFilter');
+      sel.innerHTML = '<option value="ALL">All sales reps</option>' +
+        DB.reps.map(function(r){ return '<option value="'+r+'">'+r+'</option>'; }).join('');
+      sel.value = 'ALL';
+      document.getElementById('pageTitle').textContent = 'Master Visit Calendar';
+      document.getElementById('pageSub').textContent = 'All sales reps · filterable';
+      repColHeader.classList.remove('hidden');
+    } else {
+      adminPanel.classList.add('hidden');
+      document.getElementById('pageTitle').textContent = state.user.rep + "'s Visit Calendar";
+      document.getElementById('pageSub').textContent = 'Your client visit schedule';
+      repColHeader.classList.add('hidden');
+    }
+    renderAll();
+  }
+
+  document.getElementById('repFilter').addEventListener('change', function(e){
+    state.repFilter = e.target.value;
+    renderAll();
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll('.pf-btn'), function(btn){
+    btn.addEventListener('click', function(){
+      state.priorityFilter = btn.getAttribute('data-priority');
+      Array.prototype.forEach.call(document.querySelectorAll('.pf-btn'), function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      renderAll();
+    });
+  });
+
+  // ---------------- VIEW TOGGLE ----------------
+  document.getElementById('tabCalendar').addEventListener('click', function(){
+    state.view = 'calendar';
+    document.getElementById('tabCalendar').classList.add('active');
+    document.getElementById('tabList').classList.remove('active');
+    document.getElementById('calendarView').classList.remove('hidden');
+    document.getElementById('listView').classList.add('hidden');
+  });
+  document.getElementById('tabList').addEventListener('click', function(){
+    state.view = 'list';
+    document.getElementById('tabList').classList.add('active');
+    document.getElementById('tabCalendar').classList.remove('active');
+    document.getElementById('listView').classList.remove('hidden');
+    document.getElementById('calendarView').classList.add('hidden');
+    renderListView();
+  });
+
+  // ---------------- CALENDAR NAV ----------------
+  document.getElementById('prevMonth').addEventListener('click', function(){
+    state.viewMonth = new Date(state.viewMonth.getFullYear(), state.viewMonth.getMonth()-1, 1);
+    renderCalendar();
+  });
+  document.getElementById('nextMonth').addEventListener('click', function(){
+    state.viewMonth = new Date(state.viewMonth.getFullYear(), state.viewMonth.getMonth()+1, 1);
+    renderCalendar();
+  });
+  document.getElementById('todayBtn').addEventListener('click', function(){
+    state.viewMonth = new Date(AS_OF.getFullYear(), AS_OF.getMonth(), 1);
+    renderCalendar();
+  });
+
+  function renderAll(){
+    renderSidebarStats();
+    renderClientMiniList();
+    renderCalendar();
+    if(state.view === 'list') renderListView();
+  }
+
+  // ---------------- SIDEBAR ----------------
+  function renderSidebarStats(){
+    var clients = visibleClients();
+    var high = clients.filter(function(c){return effectiveTier(c)==='High';}).length;
+    var med = clients.filter(function(c){return effectiveTier(c)==='Medium';}).length;
+    var low = clients.filter(function(c){return effectiveTier(c)==='Low';}).length;
+    document.getElementById('statTotal').textContent = clients.length;
+    document.getElementById('statHigh').textContent = high;
+    document.getElementById('statMed').textContent = med;
+    document.getElementById('statLow').textContent = low;
+
+    var y = state.viewMonth.getFullYear(), m = state.viewMonth.getMonth();
+    var due = allOccurrences().filter(function(o){
+      var d = new Date(o.date+'T00:00:00');
+      return d.getFullYear()===y && d.getMonth()===m;
+    }).length;
+    document.getElementById('statDue').textContent = due;
+  }
+
+  function renderClientMiniList(){
+    var q = (document.getElementById('clientSearch').value || '').toLowerCase();
+    var clients = visibleClients()
+      .filter(function(c){ return c.name.toLowerCase().indexOf(q) !== -1; })
+      .slice()
+      .sort(function(a,b){ return b.total_value - a.total_value; });
+    var wrap = document.getElementById('clientMiniList');
+    var isAdmin = state.user.role === 'admin';
+    wrap.innerHTML = clients.map(function(c){
+      var dotColor = effectiveTier(c)==='High' ? 'var(--high-line)' : effectiveTier(c)==='Medium' ? 'var(--med-line)' : 'var(--low-line)';
+      return '<div class="client-mini client-mini-clickable" data-client="'+encodeURIComponent(c.name)+'" title="View details for '+escapeHtml(c.name)+'">' +
+        '<span class="tier-dot" style="background:'+dotColor+'"></span>' +
+        '<span class="cname" title="'+escapeHtml(c.name)+'">'+escapeHtml(c.name)+'</span>' +
+        (isAdmin ? '<span class="cval">'+fmtMoney(c.total_value)+'</span>' : '') +
+        '</div>';
+    }).join('') || '<div class="empty-note">No clients match.</div>';
+
+    Array.prototype.forEach.call(wrap.querySelectorAll('.client-mini'), function(el){
+      el.addEventListener('click', function(){
+        var name = decodeURIComponent(el.getAttribute('data-client'));
+        openClientModal(name);
+      });
+    });
+  }
+  document.getElementById('clientSearch').addEventListener('input', renderClientMiniList);
+
+  // ---------------- CALENDAR RENDER ----------------
+  var MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  function renderCalendar(){
+    var y = state.viewMonth.getFullYear(), m = state.viewMonth.getMonth();
+    document.getElementById('calTitle').textContent = MONTH_NAMES[m] + ' ' + y;
+
+    var firstDow = new Date(y, m, 1).getDay();
+    var daysInMonth = new Date(y, m+1, 0).getDate();
+    var daysInPrevMonth = new Date(y, m, 0).getDate();
+
+    var cells = [];
+    for(var i=0;i<firstDow;i++){
+      cells.push({day: daysInPrevMonth - firstDow + 1 + i, other:true});
+    }
+    for(var d=1; d<=daysInMonth; d++){
+      cells.push({day:d, other:false, iso: y+'-'+pad(m+1)+'-'+pad(d)});
+    }
+    while(cells.length % 7 !== 0){
+      cells.push({day: cells.length - (firstDow+daysInMonth) + 1, other:true});
+    }
+
+    var byDate = occByDateMap();
+    var todayIso = todayISO(AS_OF);
+
+    var html = '';
+    for(var w=0; w<cells.length/7; w++){
+      html += '<div class="week-row">';
+      for(var c=0;c<7;c++){
+        var cell = cells[w*7+c];
+        var classes = 'day-cell' + (cell.other?' othermonth':'') + (cell.iso===todayIso?' today':'');
+        html += '<div class="'+classes+'"' + (cell.iso?(' data-date="'+cell.iso+'"'):'') + '>';
+        html += '<div class="day-num">'+cell.day+'</div>';
+        if(cell.iso && byDate[cell.iso]){
+          var occs = byDate[cell.iso].slice().sort(function(a,b){
+            var order = {High:0,Medium:1,Low:2};
+            return order[a.tier]-order[b.tier];
+          });
+          html += '<div class="chip-list">';
+          occs.slice(0,3).forEach(function(o){
+            var extraClass = o.isReminder ? ' reminder' : '';
+            var label = (o.isReminder ? '🔔 ' : '') + o.client;
+            html += '<div class="chip '+o.tier.toLowerCase()+extraClass+'" title="'+escapeHtml(o.client)+(o.rescheduled?' (rescheduled)':'')+'">'+escapeHtml(truncate(label,20))+'</div>';
+          });
+          if(occs.length>3){
+            html += '<div class="chip-more">+'+(occs.length-3)+' more</div>';
+          }
+          html += '</div>';
+        }
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+    document.getElementById('weeksContainer').innerHTML = html;
+
+    Array.prototype.forEach.call(document.querySelectorAll('.day-cell[data-date]'), function(el){
+      el.addEventListener('click', function(){
+        reminderFormOpen = false;
+        openDayModal(el.getAttribute('data-date'));
+      });
+    });
+
+    renderSidebarStats();
+  }
+
+  function pad(n){ return n<10 ? '0'+n : ''+n; }
+  function truncate(s,n){ return s.length>n ? s.slice(0,n-1)+'…' : s; }
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(ch){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+    });
+  }
+
+  // ---------------- DAY MODAL ----------------
+  var reminderFormOpen = false;
+
+  function openDayModal(iso){
+    var occs = (occByDateMap()[iso] || []).slice().sort(function(a,b){
+      var order = {High:0,Medium:1,Low:2};
+      return order[a.tier]-order[b.tier];
+    });
+    document.getElementById('modalDateTitle').textContent = fmtDateLong(iso);
+    var body = document.getElementById('modalBody');
+
+    var html = '';
+    if(occs.length === 0){
+      html += '<div class="empty-note">No visits scheduled on this day.</div>';
+    } else {
+      html += occs.map(function(o){
+        return o.isReminder ? renderReminderCard(o) : renderApptCard(o);
+      }).join('');
+    }
+
+    if(reminderFormOpen){
+      html += renderReminderForm(iso);
+    } else {
+      html += '<button class="btn-add-reminder" data-action="open-reminder-form">+ Add reminder for this date</button>';
+    }
+
+    body.innerHTML = html;
+    document.getElementById('dayModalBackdrop').classList.remove('hidden');
+
+    Array.prototype.forEach.call(body.querySelectorAll('[data-action]'), function(el){
+      el.addEventListener('click', function(){
+        var action = el.getAttribute('data-action');
+
+        if(action === 'open-reminder-form'){
+          reminderFormOpen = true;
+          openDayModal(iso);
+          return;
+        }
+        if(action === 'cancel-reminder-form'){
+          reminderFormOpen = false;
+          openDayModal(iso);
+          return;
+        }
+        if(action === 'save-reminder'){
+          var titleInput = document.getElementById('reminderTitleInput');
+          var title = titleInput.value.trim();
+          if(!title){ titleInput.focus(); return; }
+          var priority = document.getElementById('reminderPriorityInput').value;
+          var freqRaw = document.getElementById('reminderFrequencyInput').value;
+          var freqDays = freqRaw === 'once' ? null : parseInt(freqRaw, 10);
+          var rep = state.user.role === 'rep' ? state.user.rep
+                    : (state.repFilter !== 'ALL' ? state.repFilter : 'Admin');
+          var id = 'r' + (reminderIdSeq++);
+          state.manualReminders[id] = {
+            id: id, title: title, priority: priority,
+            frequencyDays: freqDays, startDate: iso, rep: rep
+          };
+          reminderFormOpen = false;
+          renderCalendar();
+          openDayModal(iso);
+          return;
+        }
+        if(action === 'delete-reminder'){
+          var rid = el.getAttribute('data-id');
+          delete state.manualReminders[rid];
+          renderCalendar();
+          openDayModal(iso);
+          return;
+        }
+
+        var client = decodeURIComponent(el.getAttribute('data-client') || '');
+        var idxAttr = el.getAttribute('data-idx');
+        var idx = idxAttr !== null ? parseInt(idxAttr, 10) : null;
+        if(action === 'reschedule'){
+          var input = el.parentElement.querySelector('input[type=date]');
+          var newDate = input.value;
+          if(!newDate) return;
+          state.overrides[client] = { anchorIndex: idx, anchorDate: newDate };
+          renderCalendar();
+          openDayModal(iso);
+        }
+        if(action === 'reset'){
+          delete state.overrides[client];
+          renderCalendar();
+          openDayModal(iso);
+        }
+      });
+    });
+    Array.prototype.forEach.call(body.querySelectorAll('.note-input'), function(ta){
+      ta.addEventListener('change', function(){
+        var client = decodeURIComponent(ta.getAttribute('data-client'));
+        var idx = ta.getAttribute('data-idx');
+        state.notes[noteKey(client, idx)] = ta.value;
+      });
+    });
+    Array.prototype.forEach.call(body.querySelectorAll('.visit-check'), function(cb){
+      cb.addEventListener('change', function(){
+        var client = decodeURIComponent(cb.getAttribute('data-client'));
+        var idx = cb.getAttribute('data-idx');
+        var field = cb.getAttribute('data-field');
+        var patch = {};
+        patch[field] = cb.checked;
+        setVisitLog(client, idx, patch);
+        cb.closest('.check-pill').classList.toggle('checked', cb.checked);
+        renderSidebarStats();
+        if(state.view === 'list') renderListView();
+      });
+    });
+  }
+
+  function renderEarningsPair(totalValue, avgAnnualEarning, firstPurchaseIso){
+    return '' +
+    '<div class="earnings-pair">' +
+      '<div class="earnings-box">' +
+        '<div class="earnings-label">Total earned to date</div>' +
+        '<div class="earnings-figure">'+fmtMoney(totalValue)+'</div>' +
+        '<div class="earnings-sub">actual, all-time</div>' +
+      '</div>' +
+      '<div class="earnings-box projected">' +
+        '<div class="earnings-label">Projected annual pace</div>' +
+        '<div class="earnings-figure">'+fmtMoney(avgAnnualEarning)+'</div>' +
+        '<div class="earnings-sub">extrapolated from '+historyLabel(firstPurchaseIso)+'</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderApptCard(o){
+    var tierClass = o.tier.toLowerCase();
+    var isAdmin = state.user.role === 'admin';
+    return '' +
+    '<div class="appt-card">' +
+      '<div class="appt-top">' +
+        '<span class="cname">'+escapeHtml(o.client)+'</span>' +
+        '<span class="tier-badge '+tierClass+'">'+o.tier+' priority</span>' +
+      '</div>' +
+      (isAdmin ? renderEarningsPair(o.total_value, o.avg_annual_earning, o.first_purchase) : '') +
+      '<div class="appt-meta">' +
+        (o.rep ? '<span><b>Rep:</b> '+escapeHtml(o.rep)+'</span>' : '') +
+        (isAdmin ? '<span><b>Visits recorded:</b> '+o.visits+'</span>' : '') +
+        '<span><b>Last purchase:</b> '+fmtDateShort(o.last_purchase)+'</span>' +
+        '<span><b>Avg. purchase gap:</b> '+Math.round(o.avg_gap_days)+' days</span>' +
+        (o.rescheduled ? '<span style="color:var(--gold-deep);"><b>Rescheduled</b> from '+fmtDateShort(o.origDate)+'</span>' : '') +
+      '</div>' +
+      '<div class="appt-actions">' +
+        '<input type="date" value="'+o.date+'">' +
+        '<button class="btn-sm primary" data-action="reschedule" data-client="'+encodeURIComponent(o.client)+'" data-idx="'+o.idx+'">Save new date</button>' +
+        (o.rescheduled ? '<button class="btn-sm" data-action="reset" data-client="'+encodeURIComponent(o.client)+'" data-idx="'+o.idx+'">Reset to original schedule</button>' : '') +
+      '</div>' +
+      '<div class="visit-call-check">' +
+        '<label class="check-pill'+(o.visited?' checked':'')+'"><input type="checkbox" class="visit-check" data-field="visited" data-client="'+encodeURIComponent(o.client)+'" data-idx="'+o.idx+'"'+(o.visited?' checked':'')+'> Visited</label>' +
+        '<label class="check-pill'+(o.called?' checked':'')+'"><input type="checkbox" class="visit-check" data-field="called" data-client="'+encodeURIComponent(o.client)+'" data-idx="'+o.idx+'"'+(o.called?' checked':'')+'> Called</label>' +
+      '</div>' +
+      '<textarea class="note-input" placeholder="Add a visit note..." data-client="'+encodeURIComponent(o.client)+'" data-idx="'+o.idx+'">'+escapeHtml(o.note)+'</textarea>' +
+    '</div>';
+  }
+
+  function renderReminderCard(o){
+    var tierClass = o.tier.toLowerCase();
+    var freqLabel = o.frequencyDays ? ('every ' + o.frequencyDays + ' days') : 'one-time';
+    return '' +
+    '<div class="appt-card reminder-card">' +
+      '<div class="appt-top">' +
+        '<span class="cname">🔔 '+escapeHtml(o.client)+'</span>' +
+        '<span class="tier-badge '+tierClass+'">'+o.tier+' priority</span>' +
+      '</div>' +
+      '<div class="appt-meta">' +
+        (o.rep ? '<span><b>Rep:</b> '+escapeHtml(o.rep)+'</span>' : '') +
+        '<span><b>Frequency:</b> '+freqLabel+'</span>' +
+      '</div>' +
+      '<div class="appt-actions">' +
+        '<button class="btn-sm" data-action="delete-reminder" data-id="'+o.id+'">Delete reminder</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderReminderForm(iso){
+    return '' +
+    '<div class="reminder-form">' +
+      '<div class="field">' +
+        '<label>Reminder title / client</label>' +
+        '<input type="text" id="reminderTitleInput" placeholder="e.g. Call about new collection">' +
+      '</div>' +
+      '<div class="row2">' +
+        '<div class="field">' +
+          '<label>Priority</label>' +
+          '<select id="reminderPriorityInput">' +
+            '<option value="High">High</option>' +
+            '<option value="Medium" selected>Medium</option>' +
+            '<option value="Low">Low</option>' +
+          '</select>' +
+        '</div>' +
+        '<div class="field">' +
+          '<label>Frequency</label>' +
+          '<select id="reminderFrequencyInput">' +
+            '<option value="once">One-time only</option>' +
+            '<option value="15">Every 15 days</option>' +
+            '<option value="30">Every 30 days</option>' +
+            '<option value="60">Every 60 days</option>' +
+          '</select>' +
+        '</div>' +
+      '</div>' +
+      '<div class="appt-actions">' +
+        '<button class="btn-sm primary" data-action="save-reminder">Save reminder</button>' +
+        '<button class="btn-sm" data-action="cancel-reminder-form">Cancel</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  document.getElementById('modalClose').addEventListener('click', function(){
+    reminderFormOpen = false;
+    document.getElementById('dayModalBackdrop').classList.add('hidden');
+  });
+  document.getElementById('dayModalBackdrop').addEventListener('click', function(e){
+    if(e.target === document.getElementById('dayModalBackdrop')){
+      reminderFormOpen = false;
+      document.getElementById('dayModalBackdrop').classList.add('hidden');
+    }
+  });
+
+  // ---------------- CLIENT DETAIL / DRILL-DOWN MODAL ----------------
+  function openClientModal(clientName){
+    var client = DB.clients.filter(function(x){ return x.name === clientName; })[0];
+    if(!client) return;
+    var isAdmin = state.user.role === 'admin';
+    var tier = effectiveTier(client);
+    var occs = occurrencesFor(client);
+    var hasOverride = !!state.priorityOverrides[client.name];
+
+    document.getElementById('clientModalTitle').textContent = client.name;
+
+    var html = '';
+    html += '<div class="cdm-top">' +
+      '<span class="tier-badge '+tier.toLowerCase()+'">'+tier+' priority · every '+CADENCE_MAP[tier]+' days</span>' +
+      (client.rep ? '<span class="cdm-rep">Rep: '+escapeHtml(client.rep)+'</span>' : '') +
+    '</div>';
+
+    if(isAdmin){
+      html += '<div class="cdm-priority-edit">' +
+        '<label>Change priority — updates this client\'s visit cadence for every login that sees them</label>' +
+        '<select id="priorityOverrideSelect">' +
+          ['High','Medium','Low'].map(function(t){
+            return '<option value="'+t+'"'+(t===tier?' selected':'')+'>'+t+' ('+CADENCE_MAP[t]+'-day cadence)</option>';
+          }).join('') +
+        '</select>' +
+        (hasOverride ? '<button class="btn-sm" id="resetPriorityBtn">Reset to computed priority ('+client.tier+')</button>' : '<div style="font-size:11.5px;color:var(--ink-soft);">Currently the computed priority from purchase history.</div>') +
+      '</div>';
+
+      var closedList = state.closedDays[client.name] || [];
+      html += '<div class="cdm-closed-days">' +
+        '<label>Closed days — no visit will ever be scheduled for this client on these dates</label>' +
+        '<div class="closed-day-add">' +
+          '<input type="date" id="closedDayInput">' +
+          '<button class="btn-sm primary" id="addClosedDayBtn">Mark day closed</button>' +
+        '</div>' +
+        (closedList.length
+          ? '<div class="closed-day-chips">' + closedList.slice().sort().map(function(d){
+              return '<span class="closed-day-chip">'+fmtDateShort(d)+'<button data-action="remove-closed-day" data-date="'+d+'" title="Remove">✕</button></span>';
+            }).join('') + '</div>'
+          : '<div style="font-size:11.5px;color:var(--ink-soft);">No closed days set for this client.</div>') +
+      '</div>';
+    }
+
+    if(isAdmin){
+      html += renderEarningsPair(client.total_value, client.avg_annual_earning, client.first_purchase);
+      html += '<div class="cdm-stats">' +
+        '<div class="stat-row"><span>Visits recorded</span><b>'+client.visits+'</b></div>' +
+        '<div class="stat-row"><span>First purchase</span><b>'+fmtDateLong(client.first_purchase)+'</b></div>' +
+        '<div class="stat-row"><span>Last purchase</span><b>'+fmtDateLong(client.last_purchase)+'</b></div>' +
+        '<div class="stat-row"><span>Avg. purchase gap</span><b>'+Math.round(client.avg_gap_days)+' days</b></div>' +
+      '</div>';
+    }
+
+    var glanceOccs = occs.filter(function(o){ return (o.note && o.note.trim()) || o.visited || o.called; });
+    html += '<h3 class="cdm-section-title">Notes at a glance</h3>';
+    if(glanceOccs.length){
+      html += '<div class="notes-glance">' + glanceOccs.map(function(o){
+        var badges = '' +
+          (o.visited ? '<span class="ng-badge ng-visited">Visited</span>' : '') +
+          (o.called ? '<span class="ng-badge ng-called">Called</span>' : '');
+        return '<div class="notes-glance-row">' +
+          '<span class="ng-date">'+fmtDateShort(o.date)+'</span>' +
+          '<span class="ng-badges">'+badges+'</span>' +
+          '<span class="ng-text">'+(o.note ? escapeHtml(o.note) : '<span class="not-yet">No note</span>')+'</span>' +
+        '</div>';
+      }).join('') + '</div>';
+    } else {
+      html += '<div class="empty-note">No notes, visits, or calls recorded yet for this client\'s upcoming visits.</div>';
+    }
+
+    html += '<h3 class="cdm-section-title">Visit schedule &amp; notes</h3>';
+    html += '<div class="notes-table">' + occs.map(function(o){
+      return '<div class="notes-row">' +
+        '<div class="notes-date">'+fmtDateLong(o.date)+(o.rescheduled ? '<span class="resched-tag">rescheduled</span>' : '')+'</div>' +
+        '<div class="visit-call-check">' +
+          '<label class="check-pill'+(o.visited?' checked':'')+'"><input type="checkbox" class="visit-check" data-field="visited" data-client="'+encodeURIComponent(client.name)+'" data-idx="'+o.idx+'"'+(o.visited?' checked':'')+'> Visited</label>' +
+          '<label class="check-pill'+(o.called?' checked':'')+'"><input type="checkbox" class="visit-check" data-field="called" data-client="'+encodeURIComponent(client.name)+'" data-idx="'+o.idx+'"'+(o.called?' checked':'')+'> Called</label>' +
+        '</div>' +
+        '<textarea class="note-input" placeholder="Add a note for this visit..." data-client="'+encodeURIComponent(client.name)+'" data-idx="'+o.idx+'">'+escapeHtml(o.note)+'</textarea>' +
+      '</div>';
+    }).join('') + '</div>';
+
+    html += '<div class="cdm-footer"><button class="btn-sm" id="jumpToCalendarBtn" data-date="'+(occs[0] ? occs[0].date : '')+'">View next visit in calendar</button></div>';
+
+    var body = document.getElementById('clientModalBody');
+    body.innerHTML = html;
+    document.getElementById('clientModalBackdrop').classList.remove('hidden');
+
+    if(isAdmin){
+      var sel = document.getElementById('priorityOverrideSelect');
+      sel.addEventListener('change', function(){
+        var newTier = sel.value;
+        if(newTier === client.tier){
+          delete state.priorityOverrides[client.name];
+        } else {
+          state.priorityOverrides[client.name] = newTier;
+        }
+        renderAll();
+        openClientModal(client.name);
+      });
+      var resetBtn = document.getElementById('resetPriorityBtn');
+      if(resetBtn){
+        resetBtn.addEventListener('click', function(){
+          delete state.priorityOverrides[client.name];
+          renderAll();
+          openClientModal(client.name);
+        });
+      }
+
+      var addClosedBtn = document.getElementById('addClosedDayBtn');
+      addClosedBtn.addEventListener('click', function(){
+        var input = document.getElementById('closedDayInput');
+        var d = input.value;
+        if(!d) return;
+        var list = state.closedDays[client.name] = state.closedDays[client.name] || [];
+        if(list.indexOf(d) === -1) list.push(d);
+        renderAll();
+        openClientModal(client.name);
+      });
+      Array.prototype.forEach.call(body.querySelectorAll('[data-action="remove-closed-day"]'), function(btn){
+        btn.addEventListener('click', function(){
+          var d = btn.getAttribute('data-date');
+          var list = state.closedDays[client.name];
+          if(list){
+            var i = list.indexOf(d);
+            if(i !== -1) list.splice(i, 1);
+            if(list.length === 0) delete state.closedDays[client.name];
+          }
+          renderAll();
+          openClientModal(client.name);
+        });
+      });
+    }
+
+    Array.prototype.forEach.call(body.querySelectorAll('.note-input'), function(ta){
+      ta.addEventListener('change', function(){
+        var cn = decodeURIComponent(ta.getAttribute('data-client'));
+        var idx = ta.getAttribute('data-idx');
+        state.notes[noteKey(cn, idx)] = ta.value;
+      });
+    });
+    Array.prototype.forEach.call(body.querySelectorAll('.visit-check'), function(cb){
+      cb.addEventListener('change', function(){
+        var cn = decodeURIComponent(cb.getAttribute('data-client'));
+        var idx = cb.getAttribute('data-idx');
+        var field = cb.getAttribute('data-field');
+        var patch = {};
+        patch[field] = cb.checked;
+        setVisitLog(cn, idx, patch);
+        cb.closest('.check-pill').classList.toggle('checked', cb.checked);
+        renderSidebarStats();
+        if(state.view === 'list') renderListView();
+      });
+    });
+
+    var jumpBtn = document.getElementById('jumpToCalendarBtn');
+    if(jumpBtn){
+      jumpBtn.addEventListener('click', function(){
+        var d = jumpBtn.getAttribute('data-date');
+        if(!d) return;
+        closeClientModal();
+        var dt = new Date(d + 'T00:00:00');
+        state.viewMonth = new Date(dt.getFullYear(), dt.getMonth(), 1);
+        document.getElementById('tabCalendar').click();
+        renderCalendar();
+        setTimeout(function(){ reminderFormOpen = false; openDayModal(d); }, 50);
+      });
+    }
+  }
+
+  function closeClientModal(){
+    document.getElementById('clientModalBackdrop').classList.add('hidden');
+  }
+  document.getElementById('clientModalClose').addEventListener('click', closeClientModal);
+  document.getElementById('clientModalBackdrop').addEventListener('click', function(e){
+    if(e.target === document.getElementById('clientModalBackdrop')) closeClientModal();
+  });
+
+  // ---------------- LIST VIEW ----------------
+  var listSort = {key:'avg_annual_earning', dir:-1};
+  function renderListView(){
+    var clients = visibleClients().map(function(c){
+      var occ = occurrencesFor(c)[0];
+      return {
+        name: c.name, rep: c.rep, tier: effectiveTier(c), total_value: c.total_value,
+        avg_annual_earning: c.avg_annual_earning,
+        history_days: daysActiveOf(c.first_purchase),
+        first_purchase: c.first_purchase,
+        visits: c.visits, last_purchase: c.last_purchase,
+        next_due: occ ? occ.date : '',
+        last_visit: lastActionDate(c, 'visited'),
+        last_called: lastActionDate(c, 'called')
+      };
+    });
+    clients.sort(function(a,b){
+      var k = listSort.key;
+      var av = (a[k]===null || a[k]===undefined) ? '' : a[k];
+      var bv = (b[k]===null || b[k]===undefined) ? '' : b[k];
+      if(av < bv) return -1*listSort.dir;
+      if(av > bv) return 1*listSort.dir;
+      return 0;
+    });
+    var tbody = document.getElementById('listBody');
+    var isAdmin = state.user.role === 'admin';
+    tbody.innerHTML = clients.map(function(c){
+      return '<tr class="client-row" data-client="'+encodeURIComponent(c.name)+'" style="cursor:pointer;">' +
+        '<td>'+escapeHtml(c.name)+'</td>' +
+        (isAdmin ? '<td>'+escapeHtml(c.rep)+'</td>' : '') +
+        '<td><span class="tier-badge '+c.tier.toLowerCase()+'">'+c.tier+'</span></td>' +
+        (isAdmin ? '<td>'+fmtMoney(c.total_value)+'</td>' : '') +
+        (isAdmin ? '<td>'+fmtMoney(c.avg_annual_earning)+'</td>' : '') +
+        (isAdmin ? '<td>'+historyLabel(c.first_purchase)+'</td>' : '') +
+        (isAdmin ? '<td>'+c.visits+'</td>' : '') +
+        '<td>'+fmtDateShort(c.last_purchase)+'</td>' +
+        '<td>'+(c.next_due?fmtDateLong(c.next_due):'—')+'</td>' +
+        '<td>'+(c.last_visit?fmtDateLong(c.last_visit):'<span class="not-yet">Not yet</span>')+'</td>' +
+        '<td>'+(c.last_called?fmtDateLong(c.last_called):'<span class="not-yet">Not yet</span>')+'</td>' +
+        '</tr>';
+    }).join('');
+    document.getElementById('repColHeader').style.display = isAdmin ? '' : 'none';
+    document.getElementById('earningColHeader').style.display = isAdmin ? '' : 'none';
+    document.getElementById('valueColHeader').style.display = isAdmin ? '' : 'none';
+    document.getElementById('historyColHeader').style.display = isAdmin ? '' : 'none';
+    document.getElementById('visitsColHeader').style.display = isAdmin ? '' : 'none';
+
+    Array.prototype.forEach.call(tbody.querySelectorAll('.client-row'), function(tr){
+      tr.addEventListener('click', function(){
+        openClientModal(decodeURIComponent(tr.getAttribute('data-client')));
+      });
+    });
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('thead th'), function(th){
+    th.addEventListener('click', function(){
+      var key = th.getAttribute('data-key');
+      if(!key) return;
+      if(listSort.key === key) listSort.dir *= -1; else { listSort.key = key; listSort.dir = 1; }
+      renderListView();
+    });
+  });
+
+  // ---------------- EXPORT / IMPORT ----------------
+  document.getElementById('exportBtn').addEventListener('click', function(){
+    var blob = new Blob([JSON.stringify({overrides: state.overrides, notes: state.notes, priorityOverrides: state.priorityOverrides, closedDays: state.closedDays, visitLog: state.visitLog, manualReminders: state.manualReminders}, null, 2)], {type:'application/json'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'visit-calendar-edits.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  });
+  document.getElementById('importFile').addEventListener('change', function(e){
+    var file = e.target.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(evt){
+      try{
+        var parsed = JSON.parse(evt.target.result);
+        if(parsed && parsed.overrides){
+          state.overrides = Object.assign({}, state.overrides, parsed.overrides);
+        }
+        if(parsed && parsed.notes){
+          state.notes = Object.assign({}, state.notes, parsed.notes);
+        }
+        if(parsed && parsed.priorityOverrides){
+          state.priorityOverrides = Object.assign({}, state.priorityOverrides, parsed.priorityOverrides);
+        }
+        if(parsed && parsed.closedDays){
+          state.closedDays = Object.assign({}, state.closedDays, parsed.closedDays);
+        }
+        if(parsed && parsed.visitLog){
+          state.visitLog = Object.assign({}, state.visitLog, parsed.visitLog);
+        }
+        if(parsed && parsed.manualReminders){
+          state.manualReminders = Object.assign({}, state.manualReminders, parsed.manualReminders);
+        }
+        renderAll();
+      }catch(err){
+        alert('Could not read that file. Please choose a valid exported JSON file.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+
+})();
+</script>
+</body>
+</html>
