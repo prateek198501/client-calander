@@ -191,33 +191,117 @@
   }
 
   @media (max-width:600px){
+    body{font-size:15.5px;}
+
+    /* Login */
     .login-card{padding:32px 22px 26px;}
-    .login-logo{max-width:150px;max-height:64px;}
-    .login-card h1{font-size:24px;}
+    .login-logo{max-width:170px;max-height:72px;}
+    .login-card h1{font-size:27px;}
+    .login-card p.sub{font-size:15px;}
+    .field label{font-size:13px;}
+    .field input{font-size:16px;padding:14px 15px;} /* 16px avoids iOS auto-zoom on focus */
+    .btn-primary{padding:15px 18px;font-size:16px;}
+    .login-hint{font-size:13px;}
 
+    /* Header */
     header.topbar{padding:12px 16px;}
-    .brandline h1{font-size:19px;}
-    main.wrap{padding:14px 14px 32px;}
+    .brandline h1{font-size:21px;}
+    .brandline .tag{font-size:11.5px;}
+    .user-chip{font-size:14px;padding:9px 15px 9px 10px;}
+    .btn-ghost{padding:11px 16px;font-size:14px;}
 
+    main.wrap{padding:14px 12px 32px;gap:16px;}
+
+    /* Sidebar */
+    .panel{padding:18px;}
+    .panel h3{font-size:17px;}
+    .legend-row{font-size:14.5px;padding:9px 0;gap:12px;}
+    .legend-swatch{width:16px;height:16px;}
+    select, .filter-select{font-size:16px;padding:12px 13px;}
+    .search-input{font-size:16px;padding:12px 13px;}
+    .client-mini{font-size:15px;padding:11px 10px;gap:10px;}
+    .client-mini .tier-dot{width:11px;height:11px;}
+    .client-mini .cval{font-size:12.5px;}
+    .stat-row{font-size:14.5px;padding:8px 0;}
+
+    /* View toggle + priority filter */
+    .view-toggle{flex-wrap:wrap;gap:8px;}
+    .toggle-btn{font-size:15px;padding:12px 20px;flex:1;min-width:120px;}
+    .priority-filter-bar{gap:10px;}
+    .pf-label{font-size:13px;}
+    .pf-btn{font-size:14.5px;padding:11px 18px;}
+
+    /* Calendar header */
     .cal-header{flex-wrap:wrap;gap:10px;}
-    .cal-nav{flex:1;justify-content:center;}
-    .cal-title{min-width:0;flex:1;font-size:19px;}
-    .cal-today-btn{width:100%;order:3;text-align:center;}
+    .cal-nav{flex:1;justify-content:center;gap:14px;}
+    .cal-nav button{width:44px;height:44px;font-size:19px;}
+    .cal-title{min-width:0;flex:1;font-size:21px;}
+    .cal-today-btn{width:100%;order:3;text-align:center;padding:12px;font-size:15px;}
 
-    .day-cell{min-height:78px;padding:5px;}
-    .day-num{font-size:11px;}
-    .chip{font-size:9.5px;padding:2px 4px;}
-    .dow-row div{font-size:9.5px;padding:7px 0;}
+    /* Calendar: swap the cramped 7-column grid for a big, readable agenda list */
+    .calendar-grid{display:none;}
+    .agenda-list{display:flex;}
 
-    .earnings-pair{grid-template-columns:1fr;}
-    .reminder-form .row2{grid-template-columns:1fr;}
-    .closed-day-add{flex-direction:column;align-items:stretch;}
+    /* List / table view */
+    table{min-width:680px;font-size:14.5px;}
+    thead th{font-size:12.5px;padding:14px 13px;}
+    tbody td{padding:14px 13px;font-size:14.5px;}
+    .tier-badge{font-size:12.5px;padding:4px 11px;}
 
-    .modal{padding:20px 18px 18px;}
-    .appt-actions input[type=date]{width:100%;}
+    /* Modals */
+    .modal{padding:22px 18px 20px;}
+    .modal-head h2{font-size:21px;}
+    .modal-close{font-size:24px;padding:4px;}
+    .appt-card{padding:16px;}
+    .appt-top .cname{font-size:16px;}
+    .tier-badge{font-size:12.5px;}
+    .appt-meta{font-size:13.5px;gap:9px 16px;}
+    .appt-actions{gap:10px;}
+    .appt-actions input[type=date]{width:100%;font-size:16px;padding:11px 12px;}
+    .btn-sm{font-size:14px;padding:11px 15px;}
+    .note-input{font-size:15px;padding:11px 12px;min-height:60px;}
 
-    .view-toggle{flex-wrap:wrap;}
-    table{min-width:640px;}
+    /* Visit / call checkboxes */
+    .visit-call-check{gap:10px;}
+    .check-pill{font-size:14px;padding:9px 13px;}
+    .check-pill input{width:19px;height:19px;}
+
+    /* Earnings pair, client detail modal */
+    .earnings-pair{grid-template-columns:1fr;gap:10px;}
+    .earnings-box{padding:13px 15px;}
+    .earnings-label{font-size:11.5px;}
+    .earnings-figure{font-size:20px;}
+    .earnings-sub{font-size:12px;}
+    .cdm-top{font-size:14px;}
+    .cdm-rep{font-size:14px;}
+    .cdm-stats{padding:6px 16px;}
+    .cdm-stats .stat-row{font-size:14.5px;}
+    .cdm-section-title{font-size:18px;}
+    .notes-glance-row{font-size:14.5px;padding:11px 13px;gap:10px;}
+    .ng-date{font-size:14px;min-width:56px;}
+    .ng-badge{font-size:11.5px;padding:3px 9px;}
+    .notes-date{font-size:14.5px;}
+    .resched-tag{font-size:11px;}
+
+    /* Priority edit, closed days */
+    .cdm-priority-edit, .cdm-closed-days{padding:14px 16px;}
+    .cdm-priority-edit label, .cdm-closed-days label{font-size:13px;}
+    .cdm-priority-edit select{font-size:16px;padding:12px 13px;}
+    .closed-day-add{flex-direction:column;align-items:stretch;gap:10px;}
+    .closed-day-add input[type=date]{font-size:16px;padding:12px 13px;}
+    .closed-day-chip{font-size:14px;padding:8px 9px 8px 13px;}
+    .closed-day-chip button{width:22px;height:22px;font-size:12px;}
+
+    /* Reminder form */
+    .reminder-form{padding:16px;}
+    .reminder-form label{font-size:12.5px;}
+    .reminder-form .row2{grid-template-columns:1fr;gap:12px;}
+    .reminder-form input, .reminder-form select{font-size:16px;padding:12px 13px;}
+    .btn-add-reminder{font-size:15px;padding:14px 16px;}
+
+    /* Footer / export-import */
+    .footer-actions{flex-direction:column;}
+    .footer-actions .btn-sm{padding:12px;}
   }
 
   /* SIDEBAR */
@@ -364,6 +448,39 @@
   .chip.low{background:var(--low-bg);color:var(--low-ink);border-left-color:var(--low-line);}
   .chip.reminder{background:#EDE7F6 !important;color:#5B3E96 !important;border-left-color:#9B7FD4 !important;border-left-style:dashed;}
   .chip-more{font-size:10.5px;color:var(--ink-soft);font-weight:700;padding-left:6px;}
+
+  /* AGENDA LIST — mobile-only alternative to the grid, shown via media query below */
+  .agenda-list{display:none;flex-direction:column;gap:14px;}
+  .agenda-day{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;
+    box-shadow:var(--shadow-sm);overflow:hidden;cursor:pointer;
+  }
+  .agenda-day.today{border-color:var(--gold);box-shadow:0 0 0 2px rgba(169,129,79,0.18);}
+  .agenda-date-bar{
+    display:flex;align-items:baseline;gap:10px;
+    padding:14px 16px;background:var(--ivory-deep);
+  }
+  .agenda-day.today .agenda-date-bar{background:var(--gold-pale);}
+  .agenda-weekday{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-soft);}
+  .agenda-daynum{font-size:20px;font-weight:800;color:var(--ink);font-family:'Cormorant Garamond',serif;}
+  .agenda-month{font-size:13px;color:var(--ink-soft);}
+  .agenda-items{padding:10px 14px 14px;display:flex;flex-direction:column;gap:8px;}
+  .agenda-item{
+    display:flex;align-items:center;gap:10px;
+    padding:11px 13px;border-radius:11px;
+    font-size:15px;font-weight:700;
+    border-left:4px solid transparent;
+  }
+  .agenda-item.high{background:var(--high-bg);color:var(--high-ink);border-left-color:var(--high-line);}
+  .agenda-item.medium{background:var(--med-bg);color:var(--med-ink);border-left-color:var(--med-line);}
+  .agenda-item.low{background:var(--low-bg);color:var(--low-ink);border-left-color:var(--low-line);}
+  .agenda-item.reminder{background:#EDE7F6;color:#5B3E96;border-left-color:#9B7FD4;border-left-style:dashed;}
+  .agenda-item .agenda-item-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .agenda-item .agenda-item-tag{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;opacity:0.75;flex:none;}
+  .agenda-empty{
+    text-align:center;padding:40px 20px;color:var(--ink-soft);font-size:15px;
+    background:var(--card);border:1px dashed var(--line);border-radius:16px;
+  }
 
   /* TABLE VIEW */
   .table-wrap{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-sm);overflow-x:auto;-webkit-overflow-scrolling:touch;}
@@ -608,6 +725,7 @@
           </div>
           <div class="weeks" id="weeksContainer"></div>
         </div>
+        <div class="agenda-list" id="agendaContainer"></div>
       </div>
 
       <div id="listView" class="hidden">
@@ -1053,6 +1171,8 @@
   // ---------------- CALENDAR RENDER ----------------
   var MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
+  var WEEKDAY_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
   function renderCalendar(){
     var y = state.viewMonth.getFullYear(), m = state.viewMonth.getMonth();
     document.getElementById('calTitle').textContent = MONTH_NAMES[m] + ' ' + y;
@@ -1074,7 +1194,12 @@
 
     var byDate = occByDateMap();
     var todayIso = todayISO(AS_OF);
+    var sortByTier = function(a,b){
+      var order = {High:0,Medium:1,Low:2};
+      return order[a.tier]-order[b.tier];
+    };
 
+    // ---- Desktop/tablet grid ----
     var html = '';
     for(var w=0; w<cells.length/7; w++){
       html += '<div class="week-row">';
@@ -1084,10 +1209,7 @@
         html += '<div class="'+classes+'"' + (cell.iso?(' data-date="'+cell.iso+'"'):'') + '>';
         html += '<div class="day-num">'+cell.day+'</div>';
         if(cell.iso && byDate[cell.iso]){
-          var occs = byDate[cell.iso].slice().sort(function(a,b){
-            var order = {High:0,Medium:1,Low:2};
-            return order[a.tier]-order[b.tier];
-          });
+          var occs = byDate[cell.iso].slice().sort(sortByTier);
           html += '<div class="chip-list">';
           occs.slice(0,3).forEach(function(o){
             var extraClass = o.isReminder ? ' reminder' : '';
@@ -1106,6 +1228,44 @@
     document.getElementById('weeksContainer').innerHTML = html;
 
     Array.prototype.forEach.call(document.querySelectorAll('.day-cell[data-date]'), function(el){
+      el.addEventListener('click', function(){
+        reminderFormOpen = false;
+        openDayModal(el.getAttribute('data-date'));
+      });
+    });
+
+    // ---- Mobile agenda list: one big, readable card per day that has activity ----
+    var agendaHtml = '';
+    var daysWithActivity = 0;
+    for(var d2=1; d2<=daysInMonth; d2++){
+      var iso = y+'-'+pad(m+1)+'-'+pad(d2);
+      if(!byDate[iso]) continue;
+      daysWithActivity++;
+      var dOccs = byDate[iso].slice().sort(sortByTier);
+      var weekday = WEEKDAY_SHORT[new Date(y, m, d2).getDay()];
+      agendaHtml += '<div class="agenda-day'+(iso===todayIso?' today':'')+'" data-date="'+iso+'">' +
+        '<div class="agenda-date-bar">' +
+          '<span class="agenda-weekday">'+weekday+'</span>' +
+          '<span class="agenda-daynum">'+d2+'</span>' +
+          '<span class="agenda-month">'+MONTH_NAMES[m]+'</span>' +
+        '</div>' +
+        '<div class="agenda-items">' +
+          dOccs.map(function(o){
+            var extraClass = o.isReminder ? ' reminder' : '';
+            var label = (o.isReminder ? '🔔 ' : '') + o.client;
+            return '<div class="agenda-item '+o.tier.toLowerCase()+extraClass+'">' +
+              '<span class="agenda-item-name">'+escapeHtml(label)+'</span>' +
+              '<span class="agenda-item-tag">'+o.tier+'</span>' +
+            '</div>';
+          }).join('') +
+        '</div>' +
+      '</div>';
+    }
+    if(daysWithActivity === 0){
+      agendaHtml = '<div class="agenda-empty">No visits scheduled in '+MONTH_NAMES[m]+' '+y+'.</div>';
+    }
+    document.getElementById('agendaContainer').innerHTML = agendaHtml;
+    Array.prototype.forEach.call(document.querySelectorAll('.agenda-day[data-date]'), function(el){
       el.addEventListener('click', function(){
         reminderFormOpen = false;
         openDayModal(el.getAttribute('data-date'));
@@ -1624,6 +1784,14 @@
     };
     reader.readAsText(file);
     e.target.value = '';
+  });
+
+  var resizeTimer = null;
+  window.addEventListener('resize', function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function(){
+      if(state.user && state.view === 'calendar') renderCalendar();
+    }, 150);
   });
 
 })();
