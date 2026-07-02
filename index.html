@@ -186,123 +186,6 @@
     margin:0 auto;
     width:100%;
   }
-  @media (max-width:980px){
-    main.wrap{grid-template-columns:1fr;}
-  }
-
-  @media (max-width:600px){
-    body{font-size:15.5px;}
-
-    /* Login */
-    .login-card{padding:32px 22px 26px;}
-    .login-logo{max-width:170px;max-height:72px;}
-    .login-card h1{font-size:27px;}
-    .login-card p.sub{font-size:15px;}
-    .field label{font-size:13px;}
-    .field input{font-size:16px;padding:14px 15px;} /* 16px avoids iOS auto-zoom on focus */
-    .btn-primary{padding:15px 18px;font-size:16px;}
-    .login-hint{font-size:13px;}
-
-    /* Header */
-    header.topbar{padding:12px 16px;}
-    .brandline h1{font-size:21px;}
-    .brandline .tag{font-size:11.5px;}
-    .user-chip{font-size:14px;padding:9px 15px 9px 10px;}
-    .btn-ghost{padding:11px 16px;font-size:14px;}
-
-    main.wrap{padding:14px 12px 32px;gap:16px;}
-
-    /* Sidebar */
-    .panel{padding:18px;}
-    .panel h3{font-size:17px;}
-    .legend-row{font-size:14.5px;padding:9px 0;gap:12px;}
-    .legend-swatch{width:16px;height:16px;}
-    select, .filter-select{font-size:16px;padding:12px 13px;}
-    .search-input{font-size:16px;padding:12px 13px;}
-    .client-mini{font-size:15px;padding:11px 10px;gap:10px;}
-    .client-mini .tier-dot{width:11px;height:11px;}
-    .client-mini .cval{font-size:12.5px;}
-    .stat-row{font-size:14.5px;padding:8px 0;}
-
-    /* View toggle + priority filter */
-    .view-toggle{flex-wrap:wrap;gap:8px;}
-    .toggle-btn{font-size:15px;padding:12px 20px;flex:1;min-width:120px;}
-    .priority-filter-bar{gap:10px;}
-    .pf-label{font-size:13px;}
-    .pf-btn{font-size:14.5px;padding:11px 18px;}
-
-    /* Calendar header */
-    .cal-header{flex-wrap:wrap;gap:10px;}
-    .cal-nav{flex:1;justify-content:center;gap:14px;}
-    .cal-nav button{width:44px;height:44px;font-size:19px;}
-    .cal-title{min-width:0;flex:1;font-size:21px;}
-    .cal-today-btn{width:100%;order:3;text-align:center;padding:12px;font-size:15px;}
-
-    /* Calendar: swap the cramped 7-column grid for a big, readable agenda list */
-    .calendar-grid{display:none;}
-    .agenda-list{display:flex;}
-
-    /* List / table view */
-    table{min-width:680px;font-size:14.5px;}
-    thead th{font-size:12.5px;padding:14px 13px;}
-    tbody td{padding:14px 13px;font-size:14.5px;}
-    .tier-badge{font-size:12.5px;padding:4px 11px;}
-
-    /* Modals */
-    .modal{padding:22px 18px 20px;}
-    .modal-head h2{font-size:21px;}
-    .modal-close{font-size:24px;padding:4px;}
-    .appt-card{padding:16px;}
-    .appt-top .cname{font-size:16px;}
-    .tier-badge{font-size:12.5px;}
-    .appt-meta{font-size:13.5px;gap:9px 16px;}
-    .appt-actions{gap:10px;}
-    .appt-actions input[type=date]{width:100%;font-size:16px;padding:11px 12px;}
-    .btn-sm{font-size:14px;padding:11px 15px;}
-    .note-input{font-size:15px;padding:11px 12px;min-height:60px;}
-
-    /* Visit / call checkboxes */
-    .visit-call-check{gap:10px;}
-    .check-pill{font-size:14px;padding:9px 13px;}
-    .check-pill input{width:19px;height:19px;}
-
-    /* Earnings pair, client detail modal */
-    .earnings-pair{grid-template-columns:1fr;gap:10px;}
-    .earnings-box{padding:13px 15px;}
-    .earnings-label{font-size:11.5px;}
-    .earnings-figure{font-size:20px;}
-    .earnings-sub{font-size:12px;}
-    .cdm-top{font-size:14px;}
-    .cdm-rep{font-size:14px;}
-    .cdm-stats{padding:6px 16px;}
-    .cdm-stats .stat-row{font-size:14.5px;}
-    .cdm-section-title{font-size:18px;}
-    .notes-glance-row{font-size:14.5px;padding:11px 13px;gap:10px;}
-    .ng-date{font-size:14px;min-width:56px;}
-    .ng-badge{font-size:11.5px;padding:3px 9px;}
-    .notes-date{font-size:14.5px;}
-    .resched-tag{font-size:11px;}
-
-    /* Priority edit, closed days */
-    .cdm-priority-edit, .cdm-closed-days{padding:14px 16px;}
-    .cdm-priority-edit label, .cdm-closed-days label{font-size:13px;}
-    .cdm-priority-edit select{font-size:16px;padding:12px 13px;}
-    .closed-day-add{flex-direction:column;align-items:stretch;gap:10px;}
-    .closed-day-add input[type=date]{font-size:16px;padding:12px 13px;}
-    .closed-day-chip{font-size:14px;padding:8px 9px 8px 13px;}
-    .closed-day-chip button{width:22px;height:22px;font-size:12px;}
-
-    /* Reminder form */
-    .reminder-form{padding:16px;}
-    .reminder-form label{font-size:12.5px;}
-    .reminder-form .row2{grid-template-columns:1fr;gap:12px;}
-    .reminder-form input, .reminder-form select{font-size:16px;padding:12px 13px;}
-    .btn-add-reminder{font-size:15px;padding:14px 16px;}
-
-    /* Footer / export-import */
-    .footer-actions{flex-direction:column;}
-    .footer-actions .btn-sm{padding:12px;}
-  }
 
   /* SIDEBAR */
   aside.sidebar{display:flex;flex-direction:column;gap:16px;}
@@ -501,6 +384,22 @@
   .tier-badge.medium{background:var(--med-bg);color:var(--med-ink);}
   .tier-badge.low{background:var(--low-bg);color:var(--low-ink);}
 
+  /* CLIENT CARDS — mobile-only alternative to the list-view table */
+  .client-cards{display:none;flex-direction:column;gap:12px;}
+  .client-card{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;
+    box-shadow:var(--shadow-sm);padding:16px 18px;cursor:pointer;
+  }
+  .client-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;}
+  .client-card-name{font-size:16.5px;font-weight:800;color:var(--ink);line-height:1.3;}
+  .client-card-rows{display:flex;flex-direction:column;gap:7px;}
+  .client-card-row{
+    display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+    font-size:14px;padding:6px 0;border-top:1px dashed var(--line);
+  }
+  .client-card-row span:first-child{color:var(--ink-soft);font-weight:700;}
+  .client-card-row span:last-child{color:var(--ink);font-weight:700;text-align:right;}
+
   /* MODAL */
   .modal-backdrop{
     position:fixed;inset:0;background:rgba(45,35,20,0.35);
@@ -612,6 +511,121 @@
   .resched-tag{font-size:10.5px;font-weight:700;color:var(--gold-deep);background:var(--gold-pale);padding:2px 7px;border-radius:999px;margin-left:6px;}
   .cdm-footer{margin-top:18px;}
   .client-mini-clickable{cursor:pointer;}
+  @media (max-width:980px){
+    main.wrap{grid-template-columns:1fr;}
+  }
+
+  @media (max-width:600px){
+    body{font-size:15.5px;}
+
+    /* Login */
+    .login-card{padding:32px 22px 26px;}
+    .login-logo{max-width:170px;max-height:72px;}
+    .login-card h1{font-size:27px;}
+    .login-card p.sub{font-size:15px;}
+    .field label{font-size:13px;}
+    .field input{font-size:16px;padding:14px 15px;} /* 16px avoids iOS auto-zoom on focus */
+    .btn-primary{padding:15px 18px;font-size:16px;}
+    .login-hint{font-size:13px;}
+
+    /* Header */
+    header.topbar{padding:12px 16px;}
+    .brandline h1{font-size:21px;}
+    .brandline .tag{font-size:11.5px;}
+    .user-chip{font-size:14px;padding:9px 15px 9px 10px;}
+    .btn-ghost{padding:11px 16px;font-size:14px;}
+
+    main.wrap{padding:14px 12px 32px;gap:16px;}
+
+    /* Sidebar */
+    .panel{padding:18px;}
+    .panel h3{font-size:17px;}
+    .legend-row{font-size:14.5px;padding:9px 0;gap:12px;}
+    .legend-swatch{width:16px;height:16px;}
+    select, .filter-select{font-size:16px;padding:12px 13px;}
+    .search-input{font-size:16px;padding:12px 13px;}
+    .client-mini{font-size:15px;padding:11px 10px;gap:10px;}
+    .client-mini .tier-dot{width:11px;height:11px;}
+    .client-mini .cval{font-size:12.5px;}
+    .stat-row{font-size:14.5px;padding:8px 0;}
+
+    /* View toggle + priority filter */
+    .view-toggle{flex-wrap:wrap;gap:8px;}
+    .toggle-btn{font-size:15px;padding:12px 20px;flex:1;min-width:120px;}
+    .priority-filter-bar{gap:10px;}
+    .pf-label{font-size:13px;}
+    .pf-btn{font-size:14.5px;padding:11px 18px;}
+
+    /* Calendar header */
+    .cal-header{flex-wrap:wrap;gap:10px;}
+    .cal-nav{flex:1;justify-content:center;gap:14px;}
+    .cal-nav button{width:44px;height:44px;font-size:19px;}
+    .cal-title{min-width:0;flex:1;font-size:21px;}
+    .cal-today-btn{width:100%;order:3;text-align:center;padding:12px;font-size:15px;}
+
+    /* Calendar: swap the cramped 7-column grid for a big, readable agenda list */
+    .calendar-grid{display:none;}
+    .agenda-list{display:flex;}
+
+    /* List view: swap the wide scrolling table for stacked cards */
+    .table-wrap{display:none;}
+    .client-cards{display:flex;}
+
+    /* Modals */
+    .modal{padding:22px 18px 20px;}
+    .modal-head h2{font-size:21px;}
+    .modal-close{font-size:24px;padding:4px;}
+    .appt-card{padding:16px;}
+    .appt-top .cname{font-size:16px;}
+    .tier-badge{font-size:12.5px;}
+    .appt-meta{font-size:13.5px;gap:9px 16px;}
+    .appt-actions{gap:10px;}
+    .appt-actions input[type=date]{width:100%;font-size:16px;padding:11px 12px;}
+    .btn-sm{font-size:14px;padding:11px 15px;}
+    .note-input{font-size:15px;padding:11px 12px;min-height:60px;}
+
+    /* Visit / call checkboxes */
+    .visit-call-check{gap:10px;}
+    .check-pill{font-size:14px;padding:9px 13px;}
+    .check-pill input{width:19px;height:19px;}
+
+    /* Earnings pair, client detail modal */
+    .earnings-pair{grid-template-columns:1fr;gap:10px;}
+    .earnings-box{padding:13px 15px;}
+    .earnings-label{font-size:11.5px;}
+    .earnings-figure{font-size:20px;}
+    .earnings-sub{font-size:12px;}
+    .cdm-top{font-size:14px;}
+    .cdm-rep{font-size:14px;}
+    .cdm-stats{padding:6px 16px;}
+    .cdm-stats .stat-row{font-size:14.5px;}
+    .cdm-section-title{font-size:18px;}
+    .notes-glance-row{font-size:14.5px;padding:11px 13px;gap:10px;}
+    .ng-date{font-size:14px;min-width:56px;}
+    .ng-badge{font-size:11.5px;padding:3px 9px;}
+    .notes-date{font-size:14.5px;}
+    .resched-tag{font-size:11px;}
+
+    /* Priority edit, closed days */
+    .cdm-priority-edit, .cdm-closed-days{padding:14px 16px;}
+    .cdm-priority-edit label, .cdm-closed-days label{font-size:13px;}
+    .cdm-priority-edit select{font-size:16px;padding:12px 13px;}
+    .closed-day-add{flex-direction:column;align-items:stretch;gap:10px;}
+    .closed-day-add input[type=date]{font-size:16px;padding:12px 13px;}
+    .closed-day-chip{font-size:14px;padding:8px 9px 8px 13px;}
+    .closed-day-chip button{width:22px;height:22px;font-size:12px;}
+
+    /* Reminder form */
+    .reminder-form{padding:16px;}
+    .reminder-form label{font-size:12.5px;}
+    .reminder-form .row2{grid-template-columns:1fr;gap:12px;}
+    .reminder-form input, .reminder-form select{font-size:16px;padding:12px 13px;}
+    .btn-add-reminder{font-size:15px;padding:14px 16px;}
+
+    /* Footer / export-import */
+    .footer-actions{flex-direction:column;}
+    .footer-actions .btn-sm{padding:12px;}
+  }
 </style>
 </head>
 <body>
@@ -749,6 +763,7 @@
             <tbody id="listBody"></tbody>
           </table>
         </div>
+        <div class="client-cards" id="clientCardsContainer"></div>
       </div>
     </section>
   </main>
@@ -1730,6 +1745,34 @@
     Array.prototype.forEach.call(tbody.querySelectorAll('.client-row'), function(tr){
       tr.addEventListener('click', function(){
         openClientModal(decodeURIComponent(tr.getAttribute('data-client')));
+      });
+    });
+
+    // Mobile card equivalent of the table — no horizontal scrolling needed
+    var cardsWrap = document.getElementById('clientCardsContainer');
+    cardsWrap.innerHTML = clients.map(function(c){
+      var rows = '';
+      if(isAdmin) rows += '<div class="client-card-row"><span>Rep</span><span>'+escapeHtml(c.rep)+'</span></div>';
+      if(isAdmin) rows += '<div class="client-card-row"><span>Total earned</span><span>'+fmtMoney(c.total_value)+'</span></div>';
+      if(isAdmin) rows += '<div class="client-card-row"><span>Projected pace</span><span>'+fmtMoney(c.avg_annual_earning)+'</span></div>';
+      if(isAdmin) rows += '<div class="client-card-row"><span>History</span><span>'+historyLabel(c.first_purchase)+'</span></div>';
+      if(isAdmin) rows += '<div class="client-card-row"><span>Visits</span><span>'+c.visits+'</span></div>';
+      rows += '<div class="client-card-row"><span>Last purchase</span><span>'+fmtDateShort(c.last_purchase)+'</span></div>';
+      rows += '<div class="client-card-row"><span>Next visit due</span><span>'+(c.next_due?fmtDateLong(c.next_due):'—')+'</span></div>';
+      rows += '<div class="client-card-row"><span>Last visit</span><span>'+(c.last_visit?fmtDateLong(c.last_visit):'Not yet')+'</span></div>';
+      rows += '<div class="client-card-row"><span>Last called</span><span>'+(c.last_called?fmtDateLong(c.last_called):'Not yet')+'</span></div>';
+      return '<div class="client-card" data-client="'+encodeURIComponent(c.name)+'">' +
+        '<div class="client-card-top">' +
+          '<div class="client-card-name">'+escapeHtml(c.name)+'</div>' +
+          '<span class="tier-badge '+c.tier.toLowerCase()+'">'+c.tier+'</span>' +
+        '</div>' +
+        '<div class="client-card-rows">'+rows+'</div>' +
+      '</div>';
+    }).join('') || '<div class="empty-note">No clients match.</div>';
+
+    Array.prototype.forEach.call(cardsWrap.querySelectorAll('.client-card'), function(card){
+      card.addEventListener('click', function(){
+        openClientModal(decodeURIComponent(card.getAttribute('data-client')));
       });
     });
   }
