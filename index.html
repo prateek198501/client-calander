@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Client Calendar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -162,6 +162,7 @@
     box-sizing:border-box;
   }
   .brandline{display:flex;align-items:center;gap:12px;min-width:0;}
+  .brand-text{min-width:0;overflow-wrap:break-word;}
   .brandline h1{font-size:22px;margin:0;overflow-wrap:break-word;}
   .brandline .tag{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.1em;}
   .topbar-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
@@ -171,8 +172,11 @@
     padding:7px 14px 7px 8px;
     border-radius:999px;
     font-size:13px;font-weight:700;color:var(--ink);
+    min-width:0;max-width:100%;
+    box-sizing:border-box;
   }
-  .user-chip .dot{width:8px;height:8px;border-radius:50%;background:var(--gold);}
+  #userChipLabel{overflow-wrap:break-word;min-width:0;}
+  .user-chip .dot{width:8px;height:8px;border-radius:50%;background:var(--gold);flex:none;}
   .btn-ghost{
     background:transparent;
     border:1.5px solid var(--line);
@@ -246,7 +250,7 @@
   .client-mini .cname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;}
   .client-mini .cval{color:var(--ink-soft);font-size:11px;font-weight:700;}
 
-  .stat-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:var(--ink-soft);border-bottom:1px dashed var(--line);}
+  .stat-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:var(--ink-soft);border-bottom:1px dashed var(--line);flex-wrap:wrap;gap:6px;}
   .stat-row:last-child{border-bottom:none;}
   .stat-row b{color:var(--ink);}
 
@@ -387,6 +391,7 @@
   .tier-badge{
     display:inline-flex;align-items:center;gap:5px;
     padding:3px 9px;border-radius:999px;font-size:11px;font-weight:800;
+    flex:none;
   }
   .tier-badge.high{background:var(--high-bg);color:var(--high-ink);}
   .tier-badge.medium{background:var(--med-bg);color:var(--med-ink);}
@@ -398,15 +403,16 @@
     background:var(--card);border:1px solid var(--line);border-radius:16px;
     box-shadow:var(--shadow-sm);padding:16px 18px;cursor:pointer;
   }
-  .client-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;}
-  .client-card-name{font-size:16.5px;font-weight:800;color:var(--ink);line-height:1.3;}
-  .client-card-rows{display:flex;flex-direction:column;gap:7px;}
+  .client-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap;min-width:0;}
+  .client-card-name{font-size:16.5px;font-weight:800;color:var(--ink);line-height:1.3;min-width:0;overflow-wrap:break-word;}
+  .client-card-rows{display:flex;flex-direction:column;gap:7px;min-width:0;}
   .client-card-row{
     display:flex;justify-content:space-between;align-items:baseline;gap:10px;
     font-size:14px;padding:6px 0;border-top:1px dashed var(--line);
+    flex-wrap:wrap;min-width:0;
   }
-  .client-card-row span:first-child{color:var(--ink-soft);font-weight:700;}
-  .client-card-row span:last-child{color:var(--ink);font-weight:700;text-align:right;}
+  .client-card-row span:first-child{color:var(--ink-soft);font-weight:700;flex:none;}
+  .client-card-row span:last-child{color:var(--ink);font-weight:700;text-align:right;min-width:0;overflow-wrap:break-word;flex:1;}
 
   /* MODAL */
   .modal-backdrop{
@@ -424,17 +430,17 @@
     padding:26px 26px 22px;
     -webkit-overflow-scrolling:touch;
   }
-  .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
-  .modal-head h2{margin:0;font-size:22px;}
-  .modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--ink-soft);}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px;min-width:0;}
+  .modal-head h2{margin:0;font-size:22px;min-width:0;overflow-wrap:break-word;}
+  .modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--ink-soft);flex:none;}
   .appt-card{
     border:1px solid var(--line);
     border-radius:14px;
     padding:14px 16px;
     margin-bottom:12px;
   }
-  .appt-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
-  .appt-top .cname{font-weight:800;font-size:15px;}
+  .appt-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;flex-wrap:wrap;min-width:0;}
+  .appt-top .cname{font-weight:800;font-size:15px;min-width:0;overflow-wrap:break-word;}
   .appt-meta{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--ink-soft);margin-bottom:10px;}
   .appt-meta b{color:var(--ink);}
   .appt-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
@@ -444,7 +450,7 @@
   .btn-sm{padding:7px 12px;font-size:12px;border-radius:8px;border:1.5px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;font-weight:700;}
   .btn-sm.primary{background:var(--gold);border-color:var(--gold);color:#fff;}
 
-  .visit-call-check{display:flex;gap:8px;margin-top:8px;}
+  .visit-call-check{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
   .check-pill{
     display:inline-flex;align-items:center;gap:6px;
     padding:6px 12px;border-radius:999px;border:1.5px solid var(--line);
@@ -551,12 +557,14 @@
     .panel{padding:18px;}
     .panel h3{font-size:17px;}
     .legend-row{font-size:14.5px;padding:9px 0;gap:12px;}
+    .legend-row .cadence{flex-basis:100%;margin-left:26px;margin-top:2px;}
     .legend-swatch{width:16px;height:16px;}
     select, .filter-select{font-size:16px;padding:12px 13px;}
     .search-input{font-size:16px;padding:12px 13px;}
-    .client-mini{font-size:15px;padding:11px 10px;gap:10px;}
+    .client-mini{font-size:15px;padding:11px 10px;gap:10px 8px;flex-wrap:wrap;}
     .client-mini .tier-dot{width:11px;height:11px;}
-    .client-mini .cval{font-size:12.5px;}
+    .client-mini .cname{flex-basis:calc(100% - 21px);}
+    .client-mini .cval{font-size:12.5px;flex-basis:100%;margin-left:21px;white-space:normal;}
     .stat-row{font-size:14.5px;padding:8px 0;}
 
     /* View toggle + priority filter */
@@ -669,7 +677,7 @@
   <header class="topbar">
     <div class="brandline">
       <div class="brand-mark" style="width:34px;height:34px;font-size:15px;">V</div>
-      <div>
+      <div class="brand-text">
         <h1 id="pageTitle">Sales Visit Calendar</h1>
         <div class="tag" id="pageSub">Client visit planning</div>
       </div>
