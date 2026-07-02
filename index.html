@@ -594,7 +594,7 @@
     .appt-actions{gap:10px;}
     .appt-actions input[type=date]{width:100%;font-size:16px;padding:11px 12px;}
     .btn-sm{font-size:14px;padding:11px 15px;}
-    .note-input{font-size:15px;padding:11px 12px;min-height:60px;max-height:160px;}
+    .note-input{font-size:16px;padding:11px 12px;min-height:60px;max-height:160px;}
 
     /* Visit / call checkboxes */
     .visit-call-check{gap:10px;}
@@ -1529,12 +1529,14 @@
   }
 
   document.getElementById('modalClose').addEventListener('click', function(){
+    if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
     reminderFormOpen = false;
     document.getElementById('dayModalBackdrop').classList.add('hidden');
     unlockBodyScroll();
   });
   document.getElementById('dayModalBackdrop').addEventListener('click', function(e){
     if(e.target === document.getElementById('dayModalBackdrop')){
+      if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
       reminderFormOpen = false;
       document.getElementById('dayModalBackdrop').classList.add('hidden');
       unlockBodyScroll();
@@ -1713,6 +1715,7 @@
   }
 
   function closeClientModal(){
+    if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
     document.getElementById('clientModalBackdrop').classList.add('hidden');
     unlockBodyScroll();
   }
